@@ -16,6 +16,11 @@ COPY . .
 RUN composer install --optimize-autoloader --no-dev --no-scripts
 
 # Set permissions for Laravel storage and cache
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-
+# Create the directories first, then change their ownership
+RUN mkdir -p /var/www/storage/framework/views \
+             /var/www/storage/framework/cache \
+             /var/www/storage/framework/sessions \
+             /var/www/storage/logs \
+             /var/www/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 CMD ["php-fpm"]
