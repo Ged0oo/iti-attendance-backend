@@ -1,7 +1,8 @@
 name: Build and Push Backend
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
