@@ -34,6 +34,11 @@ class Engagement extends Model
         'scheduled_hours' => 'integer',
     ];
 
+    // a new engagement is scheduled until someone moves it along
+    protected $attributes = [
+        'status' => 'scheduled',
+    ];
+
     public function cohort(): BelongsTo
     {
         return $this->belongsTo(Cohort::class);

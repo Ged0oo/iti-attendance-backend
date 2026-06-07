@@ -29,6 +29,11 @@ class Session extends Model
         'is_delivered' => 'boolean',
     ];
 
+    // a session is not delivered until it actually happens
+    protected $attributes = [
+        'is_delivered' => false,
+    ];
+
     public function engagement(): BelongsTo
     {
         return $this->belongsTo(Engagement::class);

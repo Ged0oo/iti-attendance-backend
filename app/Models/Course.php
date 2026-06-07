@@ -22,6 +22,11 @@ class Course extends Model
         'max_score' => 'integer',
     ];
 
+    // every course is out of 100 unless told otherwise
+    protected $attributes = [
+        'max_score' => 100,
+    ];
+
     public function cohort(): BelongsTo
     {
         return $this->belongsTo(Cohort::class);
