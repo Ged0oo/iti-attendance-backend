@@ -42,8 +42,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 
-// Courses, grade components and billing
+// Courses, grade components, instructors, lab groups and billing
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('courses', \App\Http\Controllers\Api\CourseController::class);
     Route::apiResource('grade-components', \App\Http\Controllers\Api\GradeComponentController::class);
+    Route::apiResource('instructors', \App\Http\Controllers\Api\InstructorController::class);
+    Route::apiResource('lab-groups', \App\Http\Controllers\Api\LabGroupController::class);
+
+    // billing is calculated from the schedule, not created by hand
+    Route::get('billing', [\App\Http\Controllers\Api\BillingController::class, 'index']);
+    Route::post('billing/calculate', [\App\Http\Controllers\Api\BillingController::class, 'calculate']);
+    Route::get('billing/{billingRecord}', [\App\Http\Controllers\Api\BillingController::class, 'show']);
+    Route::patch('billing/{billingRecord}/finalize', [\App\Http\Controllers\Api\BillingController::class, 'finalize']);
 });
