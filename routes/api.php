@@ -19,7 +19,7 @@ Route::post('/login', function (Request $request) {
 
 
 // ========================================
-// M4 — Attendance & QR (Token Required)
+// M4 — Attendance Management APIs
 // ========================================
 Route::middleware(['auth:sanctum'])->group(function () {
     
@@ -32,5 +32,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // QR Code Generation Endpoint
     Route::get('/sessions/{session}/qr-code', [\App\Http\Controllers\Api\QrCodeController::class, 'generate']);
+
+    // NFC Hardware Flow
+    Route::post('/nfc/register', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'register']);
+    Route::post('/nfc/lost', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'reportLost']);
     
+    // The endpoint the NFC reader hardware hits
+    Route::post('/nfc/scan', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'scan']);
 });
