@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-// Heads up: the engagements table right now is the temporary one from the
-// attendance work and it does not have course_id yet. Keep course_id in the
-// model so we are ready, but don't save it until the real table is in place.
+// Note: the engagements table started life as a temporary one from the
+// attendance work. We added course_id to it in a follow up migration, so this
+// model now maps the full set of columns we need.
 class Engagement extends Model
 {
     use HasFactory;

@@ -42,12 +42,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 
-// Courses, grade components, instructors, lab groups and billing
+// Courses, grade components, instructors, lab groups, scheduling and billing
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('courses', \App\Http\Controllers\Api\CourseController::class);
     Route::apiResource('grade-components', \App\Http\Controllers\Api\GradeComponentController::class);
     Route::apiResource('instructors', \App\Http\Controllers\Api\InstructorController::class);
     Route::apiResource('lab-groups', \App\Http\Controllers\Api\LabGroupController::class);
+
+    // engagements and the sessions they generate
+    Route::apiResource('engagements', \App\Http\Controllers\Api\EngagementController::class);
+    Route::apiResource('sessions', \App\Http\Controllers\Api\SessionController::class);
+    Route::post('engagements/{engagement}/sessions/generate', [\App\Http\Controllers\Api\SessionController::class, 'generate']);
+    Route::patch('sessions/{session}/deliver', [\App\Http\Controllers\Api\SessionController::class, 'deliver']);
 
     // billing is calculated from the schedule, not created by hand
     Route::get('billing', [\App\Http\Controllers\Api\BillingController::class, 'index']);
