@@ -27,8 +27,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/attendance/scan', [AttendanceController::class, 'scan']);
     
     // Instructor/TA Management Endpoints
-    // (In a real scenario, these would also have a role:track_admin,instructor middleware)
     Route::get('/sessions/{session}/attendance', [SessionAttendanceController::class, 'index']);
     Route::post('/sessions/{session}/close', [SessionAttendanceController::class, 'close']);
+
+    // QR Code Generation Endpoint
+    Route::get('/sessions/{session}/qr-code', [\App\Http\Controllers\Api\QrCodeController::class, 'generate']);
     
 });
