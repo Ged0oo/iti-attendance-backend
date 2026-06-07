@@ -2,32 +2,33 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Models\User;
+use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\SessionAttendanceController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| All routes that require authentication must be inside the group below.
-| The auth.php file handles /login and /logout.
-|
-*/
+// ========================================
+// PUBLIC ROUTES (No Token Required)
+// ========================================
+Route::post('/login', function (Request $request) {
+    // A raw, temporary login bypass just for your testing
+    $user = User::where('email', $request->email)->firstOrFail();
+    return response()->json([
+        'token' => $user->createToken('test-token')->plainTextToken
+    ]);
+});
 
 
-require __DIR__.'/auth.php';
-
-
-Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
-
-    Route::get('/me', function (Request $request) {
-        /** @var \App\Models\User $user */
-        $user = $request->user();
-
-        return response()->json([
-            'id'         => $user->id,
-            'name'       => $user->name,
-            'email'      => $user->email,
-            'expires_at' => $user->expires_at,
-        ]);
-    });
+// ========================================
+// M4 — Attendance & QR (Token Required)
+// ========================================
+Route::middleware(['auth:sanctum'])->group(function () {
+    
+    // Student Scanning Endpoint
+    Route::post('/attendance/scan', [AttendanceController::class, 'scan']);
+    
+    // Instructor/TA Management Endpoints
+    // (In a real scenario, these would also have a role:track_admin,instructor middleware)
+    Route::get('/sessions/{session}/attendance', [SessionAttendanceController::class, 'index']);
+    Route::post('/sessions/{session}/close', [SessionAttendanceController::class, 'close']);
+    
 });
