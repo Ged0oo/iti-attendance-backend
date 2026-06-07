@@ -22,7 +22,7 @@ class Course extends Model
         'max_score' => 'integer',
     ];
 
-    // every course is out of 100 unless told otherwise
+    // every course is out of 100
     protected $attributes = [
         'max_score' => 100,
     ];
