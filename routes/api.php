@@ -40,3 +40,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // The endpoint the NFC reader hardware hits
     Route::post('/nfc/scan', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'scan']);
 });
+
+
+// Courses, grade components and billing
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('courses', \App\Http\Controllers\Api\CourseController::class);
+    Route::apiResource('grade-components', \App\Http\Controllers\Api\GradeComponentController::class);
+});
