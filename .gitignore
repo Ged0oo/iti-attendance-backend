@@ -25,7 +25,8 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
-
 # Ignored Markdown and Agent Files
 *.md
 .antigravityignore
+bootstrap/cache/packages.php                                                            
+bootstrap/cache/services.php

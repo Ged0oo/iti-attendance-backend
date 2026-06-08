@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -29,10 +28,8 @@ class AuthController extends Controller
             ], 403);
         }
 
-        
         $user->tokens()->delete();
 
-        
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -42,6 +39,7 @@ class AuthController extends Controller
                 'id'         => $user->id,
                 'name'       => $user->name,
                 'email'      => $user->email,
+                'role'       => $user->getRoleNames()->first(),
                 'expires_at' => $user->expires_at,
             ],
         ]);
@@ -52,7 +50,7 @@ class AuthController extends Controller
      */
     public function destroy(Request $request): JsonResponse
     {
-       
+
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
