@@ -9,6 +9,7 @@ use App\Http\Requests\ReviewExcuseRequest;
 use App\Http\Resources\ExcuseRequestResource;
 use App\Services\AttendanceLedgerService;
 use App\Enums\ExcuseStatus;
+use App\Enums\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -70,8 +71,13 @@ class ExcuseRequestController extends Controller
 
     public function review(ReviewExcuseRequest $request, ExcuseRequest $excuse, AttendanceLedgerService $ledgerService)
     {
+        $user = Auth::user();
+        if ($user && $user->hasRole(UserRole::STUDENT->value)) {
+            abort(403, 'Unauthorized.');
+        }
+
         if ($excuse->status !== ExcuseStatus::Requested) {
-            return response()->json(['message' => 'Already reviewed'], 422);
+            return response()->json(['message' => 'Excuse has already been reviewed'], 422);
         }
 
         $excuse->status = $request->decision === 'approved' ? ExcuseStatus::Approved : ExcuseStatus::Rejected;
