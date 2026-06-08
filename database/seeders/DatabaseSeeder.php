@@ -11,5 +11,12 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             BranchManagerSeeder::class,
         ]);
+
+        // M5
+        $this->call([
+            StudentSeeder::class,
+            AttendanceLedgerSeeder::class,
+            ExcuseRequestSeeder::class,
+        ]);
     }
 }
