@@ -27,6 +27,9 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     Route::post('/users', [UserController::class, 'store']);
 });
 
+// ========================================
+// M4 — Attendance Management APIs
+// ========================================
 Route::middleware(['auth:sanctum'])->group(function () {
 
     // Student Scanning Endpoint
@@ -51,6 +54,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         'scan']);
 });
 
+// ========================================
+// M3 — Courses, Engagements & Billing
+// ========================================
 
 // Anyone signed in can browse the schedule (read only)
 Route::middleware('auth:sanctum')->group(function () {
@@ -80,4 +86,52 @@ Route::middleware(['auth:sanctum', \Spatie\Permission\Middleware\RoleMiddleware:
     Route::post('billing/calculate', [\App\Http\Controllers\Api\BillingController::class, 'calculate']);
     Route::get('billing/{billingRecord}', [\App\Http\Controllers\Api\BillingController::class, 'show']);
     Route::patch('billing/{billingRecord}/finalize', [\App\Http\Controllers\Api\BillingController::class, 'finalize']);
+});
+
+// ========================================
+// M2 — Tracks, Cohorts & Announcements
+// ========================================
+Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
+
+    // Tracks
+    Route::get('/tracks', [\App\Http\Controllers\TrackController::class, 'index']);
+    Route::get('/tracks/{track}', [\App\Http\Controllers\TrackController::class, 'show']);
+
+    Route::middleware('role:branch_manager')->group(function () {
+        Route::post('/tracks', [\App\Http\Controllers\TrackController::class, 'store']);
+        Route::put('/tracks/{track}', [\App\Http\Controllers\TrackController::class, 'update']);
+        Route::delete('/tracks/{track}', [\App\Http\Controllers\TrackController::class, 'destroy']);
+    });
+
+    // Track Admins
+    Route::get('/tracks/{track}/admins', [\App\Http\Controllers\TrackAdminController::class, 'index']);
+
+    Route::middleware('role:branch_manager')->group(function () {
+        Route::post('/tracks/{track}/admins', [\App\Http\Controllers\TrackAdminController::class, 'store']);
+        Route::delete('/tracks/{track}/admins/{userId}', [\App\Http\Controllers\TrackAdminController::class, 'destroy']);
+    });
+
+    // Cohorts
+    Route::get('/cohorts', [\App\Http\Controllers\CohortController::class, 'index']);
+    Route::get('/cohorts/{cohort}', [\App\Http\Controllers\CohortController::class, 'show']);
+
+    Route::middleware('role:branch_manager')->group(function () {
+        Route::post('/cohorts', [\App\Http\Controllers\CohortController::class, 'store']);
+        Route::put('/cohorts/{cohort}', [\App\Http\Controllers\CohortController::class, 'update']);
+        Route::delete('/cohorts/{cohort}', [\App\Http\Controllers\CohortController::class, 'destroy']);
+    });
+
+    Route::middleware('role:branch_manager,track_admin')->group(function () {
+        Route::patch('/cohorts/{cohort}/transition', [\App\Http\Controllers\CohortController::class, 'transition']);
+    });
+
+    // Announcements
+    Route::get('/cohorts/{cohort}/announcements', [\App\Http\Controllers\AnnouncementController::class, 'index']);
+    Route::get('/announcements/{announcement}', [\App\Http\Controllers\AnnouncementController::class, 'show']);
+
+    Route::middleware('role:track_admin,instructor')->group(function () {
+        Route::post('/announcements', [\App\Http\Controllers\AnnouncementController::class, 'store']);
+        Route::put('/announcements/{announcement}', [\App\Http\Controllers\AnnouncementController::class, 'update']);
+        Route::delete('/announcements/{announcement}', [\App\Http\Controllers\AnnouncementController::class, 'destroy']);
+    });
 });
