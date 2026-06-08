@@ -50,3 +50,34 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/nfc/scan', [\App\Http\Controllers\Api\NfcAttendanceController::class,
         'scan']);
 });
+
+
+// Anyone signed in can browse the schedule (read only)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('courses', \App\Http\Controllers\Api\CourseController::class)->only(['index', 'show']);
+    Route::apiResource('grade-components', \App\Http\Controllers\Api\GradeComponentController::class)->only(['index', 'show']);
+    Route::apiResource('instructors', \App\Http\Controllers\Api\InstructorController::class)->only(['index', 'show']);
+    Route::apiResource('lab-groups', \App\Http\Controllers\Api\LabGroupController::class)->only(['index', 'show']);
+    Route::apiResource('engagements', \App\Http\Controllers\Api\EngagementController::class)->only(['index', 'show']);
+    Route::apiResource('sessions', \App\Http\Controllers\Api\SessionController::class)->only(['index', 'show']);
+});
+
+// Only the track admin (or branch manager) configures the cohort
+Route::middleware(['auth:sanctum', \Spatie\Permission\Middleware\RoleMiddleware::using('track_admin|branch_manager')])->group(function () {
+    Route::apiResource('courses', \App\Http\Controllers\Api\CourseController::class)->except(['index', 'show']);
+    Route::apiResource('grade-components', \App\Http\Controllers\Api\GradeComponentController::class)->except(['index', 'show']);
+    Route::apiResource('instructors', \App\Http\Controllers\Api\InstructorController::class)->except(['index', 'show']);
+    Route::apiResource('lab-groups', \App\Http\Controllers\Api\LabGroupController::class)->except(['index', 'show']);
+    Route::apiResource('engagements', \App\Http\Controllers\Api\EngagementController::class)->except(['index', 'show']);
+    Route::apiResource('sessions', \App\Http\Controllers\Api\SessionController::class)->except(['index', 'show']);
+    Route::post('engagements/{engagement}/sessions/generate', [\App\Http\Controllers\Api\SessionController::class, 'generate']);
+    Route::patch('sessions/{session}/deliver', [\App\Http\Controllers\Api\SessionController::class, 'deliver']);
+});
+
+// Billing rollup is for the branch manager only
+Route::middleware(['auth:sanctum', \Spatie\Permission\Middleware\RoleMiddleware::using('branch_manager')])->group(function () {
+    Route::get('billing', [\App\Http\Controllers\Api\BillingController::class, 'index']);
+    Route::post('billing/calculate', [\App\Http\Controllers\Api\BillingController::class, 'calculate']);
+    Route::get('billing/{billingRecord}', [\App\Http\Controllers\Api\BillingController::class, 'show']);
+    Route::patch('billing/{billingRecord}/finalize', [\App\Http\Controllers\Api\BillingController::class, 'finalize']);
+});
