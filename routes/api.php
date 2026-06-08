@@ -68,10 +68,6 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
         'scan']);
 });
 
-// ========================================
-// M3 — Courses, Engagements & Billing
-// ========================================
-
 // Anyone signed in can browse the schedule (read only)
 Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     Route::apiResource('courses', \App\Http\Controllers\Api\CourseController::class)->only(['index', 'show']);
@@ -109,9 +105,7 @@ Route::middleware(['auth:sanctum', 'check.expiry', \Spatie\Permission\Middleware
     Route::patch('billing/{billingRecord}/finalize', [\App\Http\Controllers\Api\BillingController::class, 'finalize']);
 });
 
-// ========================================
-// M2 — Tracks, Cohorts & Announcements
-// ========================================
+// Tracks, Cohorts & Announcements
 Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
 
     // Tracks
