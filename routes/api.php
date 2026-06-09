@@ -41,6 +41,7 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     Route::get('/excuse-requests/{excuse}', [ExcuseRequestController::class, 'show']);
     Route::patch('/excuse-requests/{excuse}/review', [ExcuseRequestController::class, 'review']);
 
+    Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
 });
 
@@ -106,7 +107,7 @@ Route::middleware(['auth:sanctum', 'check.expiry', \Spatie\Permission\Middleware
 });
 
 // Tracks, Cohorts & Announcements
-Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
+    Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
 
     // Tracks
     Route::get('/tracks', [\App\Http\Controllers\TrackController::class, 'index']);
