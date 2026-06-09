@@ -16,8 +16,10 @@ class LabGroupController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        $cohortId = $request->route('cohort') ?? $request->integer('cohort_id');
+
         $groups = LabGroup::query()
-            ->when($request->integer('cohort_id'), fn ($q, $id) => $q->where('cohort_id', $id))
+            ->when($cohortId, fn ($q) => $q->where('cohort_id', $cohortId))
             ->when($request->integer('course_id'), fn ($q, $id) => $q->where('course_id', $id))
             ->latest()
             ->paginate(20);

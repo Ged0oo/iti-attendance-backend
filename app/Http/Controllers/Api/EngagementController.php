@@ -16,8 +16,10 @@ class EngagementController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        $cohortId = $request->route('cohort') ?? $request->integer('cohort_id');
+
         $engagements = Engagement::query()
-            ->when($request->integer('cohort_id'), fn ($q, $id) => $q->where('cohort_id', $id))
+            ->when($cohortId, fn ($q) => $q->where('cohort_id', $cohortId))
             ->when($request->integer('instructor_id'), fn ($q, $id) => $q->where('instructor_id', $id))
             ->latest()
             ->paginate(20);

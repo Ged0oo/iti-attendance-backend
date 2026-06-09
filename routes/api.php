@@ -80,6 +80,13 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     Route::apiResource('lab-groups', \App\Http\Controllers\Api\LabGroupController::class)->only(['index', 'show']);
     Route::apiResource('engagements', \App\Http\Controllers\Api\EngagementController::class)->only(['index', 'show']);
     Route::apiResource('sessions', \App\Http\Controllers\Api\SessionController::class)->only(['index', 'show']);
+
+    // nested listings (same controllers, scoped by the parent in the url)
+    Route::get('cohorts/{cohort}/courses', [\App\Http\Controllers\Api\CourseController::class, 'index']);
+    Route::get('courses/{course}/components', [\App\Http\Controllers\Api\GradeComponentController::class, 'index']);
+    Route::get('cohorts/{cohort}/lab-groups', [\App\Http\Controllers\Api\LabGroupController::class, 'index']);
+    Route::get('cohorts/{cohort}/engagements', [\App\Http\Controllers\Api\EngagementController::class, 'index']);
+    Route::get('engagements/{engagement}/sessions', [\App\Http\Controllers\Api\SessionController::class, 'index']);
 });
 
 // Only the track admin (or branch manager) configures the cohort
