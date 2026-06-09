@@ -19,8 +19,10 @@ class SessionController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        $engagementId = $request->route('engagement') ?? $request->integer('engagement_id');
+
         $sessions = Session::query()
-            ->when($request->integer('engagement_id'), fn ($q, $id) => $q->where('engagement_id', $id))
+            ->when($engagementId, fn ($q) => $q->where('engagement_id', $engagementId))
             ->latest('date')
             ->paginate(20);
 

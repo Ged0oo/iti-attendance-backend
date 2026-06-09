@@ -12,6 +12,17 @@ class DatabaseSeeder extends Seeder
             BranchManagerSeeder::class,
         ]);
 
+        // M3
+        $this->call([
+            InstructorSeeder::class,
+            CourseSeeder::class,
+            GradeComponentSeeder::class,
+            LabGroupSeeder::class,
+            EngagementSeeder::class,
+            SessionSeeder::class,
+            BillingRecordSeeder::class,
+        ]);
+
         // M5
         $this->call([
             StudentSeeder::class,
