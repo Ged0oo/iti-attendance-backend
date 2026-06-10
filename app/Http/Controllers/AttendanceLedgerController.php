@@ -19,6 +19,10 @@ class AttendanceLedgerController extends Controller
         }
 
         $ledger = $student->ledger;
+        if (! $ledger) {
+            abort(404, 'This student has no ledger yet.');
+        }
+
         return new LedgerResource($ledger);
     }
 
@@ -30,6 +34,10 @@ class AttendanceLedgerController extends Controller
         }
 
         $ledger = $student->ledger;
-        return LedgerEntryResource::collection($ledger->entries);
+        if (! $ledger) {
+            abort(404, 'This student has no ledger yet.');
+        }
+
+        return LedgerEntryResource::collection($ledger->entries()->paginate(20));
     }
 }

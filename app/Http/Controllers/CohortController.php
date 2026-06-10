@@ -13,12 +13,12 @@ class CohortController extends Controller
         $user = $request->user();
 
         if ($user->hasRole('branch_manager')) {
-            $cohorts = Cohort::with('track', 'creator')->get();
+            $cohorts = Cohort::with('track', 'creator')->paginate(20);
         } else {
             $trackIds = $user->trackAdmins()->pluck('track_id');
             $cohorts = Cohort::whereIn('track_id', $trackIds)
                 ->with('track', 'creator')
-                ->get();
+                ->paginate(20);
         }
 
         return response()->json($cohorts);
@@ -74,6 +74,11 @@ class CohortController extends Controller
 
     public function destroy(Cohort $cohort): JsonResponse
     {
+        // do not wipe a cohort that still has enrolled students (cascade would take them too)
+        if (\App\Models\Student::where('cohort_id', $cohort->id)->exists()) {
+            return response()->json(['message' => 'Cannot delete a cohort that still has students.'], 422);
+        }
+
         $cohort->delete();
         return response()->json(['message' => 'Cohort deleted.']);
     }
@@ -81,7 +86,7 @@ class CohortController extends Controller
     public function transition(Request $request, Cohort $cohort): JsonResponse
     {
         $data = $request->validate([
-            'status' => 'required|string',
+            'status' => 'required|in:open,configuring,delivering,participating,rolled_up',
         ]);
 
         $allowed = [

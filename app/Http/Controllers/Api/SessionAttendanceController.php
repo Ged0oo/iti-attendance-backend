@@ -33,7 +33,7 @@ class SessionAttendanceController extends Controller
      */
     public function close(Session $session): JsonResponse
     {
-        if($session->is_delivered) {
+        if($session->closed_at) {
             return response()->json(['message' => 'Session is already closed.'], 400);
         }
 
