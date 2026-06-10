@@ -41,6 +41,7 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     Route::get('/excuse-requests/{excuse}', [ExcuseRequestController::class, 'show']);
     Route::patch('/excuse-requests/{excuse}/review', [ExcuseRequestController::class, 'review']);
 
+    Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
 });
 
@@ -67,10 +68,6 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     Route::post('/nfc/scan', [\App\Http\Controllers\Api\NfcAttendanceController::class,
         'scan']);
 });
-
-// ========================================
-// M3 — Courses, Engagements & Billing
-// ========================================
 
 // Anyone signed in can browse the schedule (read only)
 Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
@@ -109,10 +106,8 @@ Route::middleware(['auth:sanctum', 'check.expiry', \Spatie\Permission\Middleware
     Route::patch('billing/{billingRecord}/finalize', [\App\Http\Controllers\Api\BillingController::class, 'finalize']);
 });
 
-// ========================================
-// M2 — Tracks, Cohorts & Announcements
-// ========================================
-Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
+// Tracks, Cohorts & Announcements
+    Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
 
     // Tracks
     Route::get('/tracks', [\App\Http\Controllers\TrackController::class, 'index']);

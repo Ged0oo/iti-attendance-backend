@@ -4,11 +4,29 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateUserRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    public function index(Request $request): JsonResponse
+    {
+        $query = User::query();
+
+        if ($request->has('role')) {
+            $query->role($request->role);
+        }
+
+        $users = $query->get()->map(fn ($user) => [
+            'id'    => $user->id,
+            'name'  => $user->name,
+            'email' => $user->email,
+            'role'  => $user->getRoleNames()->first(),
+        ]);
+
+        return response()->json($users);
+    }
 
     public function store(CreateUserRequest $request): JsonResponse
     {
