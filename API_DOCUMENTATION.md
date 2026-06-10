@@ -5,24 +5,24 @@
 | POST | `api/login` | api, guest | App\Http\Controllers\Auth\AuthController@store |
 | POST | `api/logout` | api, auth:sanctum | App\Http\Controllers\Auth\AuthController@destroy |
 | GET | `api/me` | api, auth:sanctum, check.expiry | Closure |
-| GET | `api/cohorts/{cohort}/students` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@index |
-| POST | `api/students` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@store |
-| GET | `api/students/at-risk` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@atRisk |
+| GET | `api/cohorts/{cohort}/students` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@index |
+| POST | `api/students` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@store |
+| GET | `api/students/at-risk` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@atRisk |
+| PUT | `api/students/{student}` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@update |
+| PATCH | `api/students/{student}/lab-group` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@assignLabGroup |
 | GET | `api/students/{student}` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@show |
-| PUT | `api/students/{student}` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@update |
-| PATCH | `api/students/{student}/lab-group` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@assignLabGroup |
 | GET | `api/students/{student}/ledger` | api, auth:sanctum, check.expiry | App\Http\Controllers\AttendanceLedgerController@show |
 | GET | `api/students/{student}/ledger/entries` | api, auth:sanctum, check.expiry | App\Http\Controllers\AttendanceLedgerController@entries |
 | GET | `api/excuse-requests` | api, auth:sanctum, check.expiry | App\Http\Controllers\ExcuseRequestController@index |
-| POST | `api/excuse-requests` | api, auth:sanctum, check.expiry | App\Http\Controllers\ExcuseRequestController@store |
 | GET | `api/excuse-requests/{excuse}` | api, auth:sanctum, check.expiry | App\Http\Controllers\ExcuseRequestController@show |
-| PATCH | `api/excuse-requests/{excuse}/review` | api, auth:sanctum, check.expiry | App\Http\Controllers\ExcuseRequestController@review |
-| GET | `api/users` | api, auth:sanctum, check.expiry | App\Http\Controllers\UserController@index |
-| POST | `api/users` | api, auth:sanctum, check.expiry | App\Http\Controllers\UserController@store |
+| POST | `api/excuse-requests` | api, auth:sanctum, check.expiry, role:student | App\Http\Controllers\ExcuseRequestController@store |
+| PATCH | `api/excuse-requests/{excuse}/review` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\ExcuseRequestController@review |
+| GET | `api/users` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\UserController@index |
+| POST | `api/users` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\UserController@store |
 | POST | `api/attendance/scan` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\AttendanceController@scan |
-| GET | `api/sessions/{session}/attendance` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\SessionAttendanceController@index |
-| POST | `api/sessions/{session}/close` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\SessionAttendanceController@close |
-| GET | `api/sessions/{session}/qr-code` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\QrCodeController@generate |
+| GET | `api/sessions/{session}/attendance` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\SessionAttendanceController@index |
+| POST | `api/sessions/{session}/close` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\SessionAttendanceController@close |
+| GET | `api/sessions/{session}/qr-code` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\QrCodeController@generate |
 | POST | `api/nfc/register` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\NfcAttendanceController@register |
 | POST | `api/nfc/lost` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\NfcAttendanceController@reportLost |
 | POST | `api/nfc/scan` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\NfcAttendanceController@scan |
