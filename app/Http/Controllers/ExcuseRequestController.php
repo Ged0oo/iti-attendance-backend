@@ -19,8 +19,9 @@ class ExcuseRequestController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-
-        if ($user->hasRole(UserRole::STUDENT->value)) {
+        
+        // This relies on roles via Spatie Laravel Permission
+        if ($user && $user->hasRole(UserRole::STUDENT->value)) {
             $student = $user->student;
             $excuses = $student ? $student->excuseRequests()->latest()->get() : collect();
         } else {
