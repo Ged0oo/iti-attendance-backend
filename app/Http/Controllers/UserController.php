@@ -18,7 +18,7 @@ class UserController extends Controller
             $query->role($request->role);
         }
 
-        $users = $query->get()->map(fn ($user) => [
+        $users = $query->paginate(20)->through(fn ($user) => [
             'id'    => $user->id,
             'name'  => $user->name,
             'email' => $user->email,

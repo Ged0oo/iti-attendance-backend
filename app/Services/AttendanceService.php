@@ -95,10 +95,11 @@ public function processScan(Session $session, Student $student): array
                 AttendanceRecord::insert($absentRecords);
             }
 
-            // Mark session as delivered
+            // Mark the session closed (attendance finalised). It was also held,
+            // so it counts as delivered for billing.
             \Illuminate\Support\Facades\DB::table('sessions')
                 ->where('id', $session->id)
-                ->update(['is_delivered' => true]);
+                ->update(['closed_at' => $now, 'is_delivered' => true]);
 
             // Fire event so M5 (Ledger) can deduct 25 points per absent student
             event(new \App\Events\SessionClosed($session, $absentStudentIds));
