@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\AuthorizesGradingScope;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreGradeRequest;
 use App\Http\Requests\UpdateGradeRequest;
@@ -20,6 +21,8 @@ use InvalidArgumentException;
 
 class GradeController extends Controller
 {
+    use AuthorizesGradingScope;
+
     public function __construct(
         private readonly GradeNormalizationService $normalizer
     ) {
@@ -27,11 +30,10 @@ class GradeController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
-        $grades = Grade::query()
-            ->with(['student', 'gradeComponent.course', 'labGroup', 'grader', 'overrider'])
-            ->when($request->user()->hasRole('instructor'), function ($query) use ($request) {
-                $query->whereHas('labGroup', fn ($labGroupQuery) => $labGroupQuery->where('instructor_id', $request->user()->id));
-            })
+        $grades = $this->scopeByStudentVisibility(
+            Grade::query()->with(['student', 'gradeComponent.course', 'labGroup', 'grader', 'overrider']),
+            $request
+        )
             ->when($request->integer('student_id'), fn ($query, $id) => $query->where('student_id', $id))
             ->when($request->integer('grade_component_id'), fn ($query, $id) => $query->where('grade_component_id', $id))
             ->when($request->integer('lab_group_id'), fn ($query, $id) => $query->where('lab_group_id', $id))
@@ -52,6 +54,8 @@ class GradeController extends Controller
 
         if ($request->user()->hasRole('instructor')) {
             $this->authorizeInstructorLabGroup($request, $data['lab_group_id'] ?? null, $student);
+        } else {
+            $this->authorizeStudentVisibility($request, $student, 'You can only grade students in your assigned lab groups.');
         }
 
         $normalizedScore = $this->normalizedScore((float) $data['raw_score'], $component);
@@ -120,6 +124,9 @@ class GradeController extends Controller
     private function authorizeGradeAccess(Request $request, Grade $grade): void
     {
         if (! $request->user()->hasRole('instructor')) {
+            $grade->loadMissing('student');
+            $this->authorizeStudentVisibility($request, $grade->student, 'You can only access grades for your assigned lab groups.');
+
             return;
         }
 

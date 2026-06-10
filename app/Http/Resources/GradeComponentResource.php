@@ -20,6 +20,7 @@ class GradeComponentResource extends JsonResource
             'weight' => $this->weight,
             'raw_max' => $this->raw_max,
             'is_deliverable' => $this->is_deliverable,
+            'due_at' => $this->due_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

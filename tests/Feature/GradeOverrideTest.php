@@ -7,8 +7,10 @@ use App\Models\Grade;
 use App\Models\GradeComponent;
 use App\Models\LabGroup;
 use App\Models\Student;
+use App\Models\TrackAdmin;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -21,6 +23,7 @@ class GradeOverrideTest extends TestCase
     {
         $admin = $this->trackAdmin();
         $grade = $this->grade();
+        $this->assignAdminToGradeTrack($admin, $grade);
 
         Sanctum::actingAs($admin);
 
@@ -34,6 +37,7 @@ class GradeOverrideTest extends TestCase
     {
         $admin = $this->trackAdmin();
         $grade = $this->grade();
+        $this->assignAdminToGradeTrack($admin, $grade);
 
         Sanctum::actingAs($admin);
 
@@ -95,6 +99,18 @@ class GradeOverrideTest extends TestCase
             'raw_score' => 50,
             'normalized_score' => 20,
             'graded_by' => $instructor->id,
+        ]);
+    }
+
+    private function assignAdminToGradeTrack(User $admin, Grade $grade): void
+    {
+        $grade->loadMissing('gradeComponent.course');
+
+        TrackAdmin::create([
+            'user_id' => $admin->id,
+            'track_id' => DB::table('cohorts')
+                ->where('id', $grade->gradeComponent->course->cohort_id)
+                ->value('track_id'),
         ]);
     }
 }

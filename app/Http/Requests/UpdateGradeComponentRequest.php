@@ -26,6 +26,7 @@ class UpdateGradeComponentRequest extends FormRequest
             'weight' => ['sometimes', 'numeric', 'min:0', 'max:100'],
             'raw_max' => ['sometimes', 'numeric', 'min:0.01'],
             'is_deliverable' => ['boolean'],
+            'due_at' => ['sometimes', 'nullable', 'date'],
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\AuthorizesGradingScope;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\StudentGradeCardResource;
 use App\Models\Student;
@@ -9,20 +10,11 @@ use Illuminate\Http\Request;
 
 class StudentGradeCardController extends Controller
 {
+    use AuthorizesGradingScope;
+
     public function __invoke(Request $request, Student $student): StudentGradeCardResource
     {
-        $student->loadMissing('labGroup');
-
-        if ($request->user()->hasRole('student') && $student->user_id !== $request->user()->id) {
-            abort(403, 'You can only view your own grade card.');
-        }
-
-        if (
-            $request->user()->hasRole('instructor')
-            && (! $student->labGroup || $student->labGroup->instructor_id !== $request->user()->id)
-        ) {
-            abort(403, 'You can only view grade cards for students in your assigned lab groups.');
-        }
+        $this->authorizeStudentVisibility($request, $student, 'You can only view grade cards for students in your assigned lab groups.');
 
         $student->load([
             'user',

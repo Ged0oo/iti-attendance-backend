@@ -10,6 +10,15 @@ class StudentTag extends Model
 {
     use HasFactory;
 
+    public const TAGS = [
+        'uses_ai',
+        'cheating',
+        'loves_extra_work',
+        'needs_support',
+        'at_risk',
+        'excellent_progress',
+    ];
+
     protected $fillable = [
         'student_id',
         'tag',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\AuthorizesGradingScope;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreStudentNoteRequest;
 use App\Http\Requests\UpdateStudentNoteRequest;
@@ -15,13 +16,14 @@ use Illuminate\Http\Response;
 
 class StudentNoteController extends Controller
 {
+    use AuthorizesGradingScope;
+
     public function index(Request $request): AnonymousResourceCollection
     {
-        $notes = StudentNote::query()
-            ->with(['student', 'writtenBy', 'course'])
-            ->when($request->user()->hasRole('instructor'), function ($query) use ($request) {
-                $query->whereHas('student.labGroup', fn ($labGroupQuery) => $labGroupQuery->where('instructor_id', $request->user()->id));
-            })
+        $notes = $this->scopeByStudentVisibility(
+            StudentNote::query()->with(['student', 'writtenBy', 'course']),
+            $request
+        )
             ->when($request->integer('student_id'), fn ($query, $id) => $query->where('student_id', $id))
             ->when($request->integer('course_id'), fn ($query, $id) => $query->where('course_id', $id))
             ->latest()
@@ -76,13 +78,6 @@ class StudentNoteController extends Controller
 
     private function authorizeStudentAccess(Request $request, Student $student): void
     {
-        $student->loadMissing('labGroup');
-
-        if (
-            $request->user()->hasRole('instructor')
-            && (! $student->labGroup || $student->labGroup->instructor_id !== $request->user()->id)
-        ) {
-            abort(403, 'You can only manage notes for students in your assigned lab groups.');
-        }
+        $this->authorizeStudentVisibility($request, $student, 'You can only manage notes for students in your assigned lab groups.');
     }
 }

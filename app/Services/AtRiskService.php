@@ -8,10 +8,22 @@ class AtRiskService
 {
     public static function evaluate(Student $student): void
     {
-        $isAtRisk = $student->ledger->balance < 150;
-        
-        // M6 INTEGRATION: also set true if any course normalized_score < 60
-        
+        $student->loadMissing(['ledger', 'grades.gradeComponent.course']);
+
+        $ledgerBalance = $student->ledger?->balance;
+        $attendanceRisk = $ledgerBalance !== null && $ledgerBalance < 150;
+
+        $gradeRisk = $student->grades
+            ->groupBy(fn ($grade) => $grade->gradeComponent?->course_id)
+            ->filter(fn ($grades, $courseId) => $courseId !== null)
+            ->contains(function ($grades) {
+                $courseTotal = $grades->sum(fn ($grade) => (float) ($grade->override_value ?? $grade->normalized_score));
+
+                return $courseTotal < 60;
+            });
+
+        $isAtRisk = $attendanceRisk || $gradeRisk;
+
         $student->update(['is_at_risk' => $isAtRisk]);
     }
 }

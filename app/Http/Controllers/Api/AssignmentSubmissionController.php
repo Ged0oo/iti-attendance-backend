@@ -2,19 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\AuthorizesGradingScope;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAssignmentSubmissionRequest;
 use App\Http\Resources\AssignmentSubmissionResource;
 use App\Models\AssignmentSubmission;
+use App\Models\GradeComponent;
 use App\Models\Student;
 use App\Services\LatePenaltyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
 
 class AssignmentSubmissionController extends Controller
 {
+    use AuthorizesGradingScope;
+
     public function __construct(
         private readonly LatePenaltyService $latePenalty
     ) {
@@ -22,11 +27,10 @@ class AssignmentSubmissionController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
-        $submissions = AssignmentSubmission::query()
-            ->with(['student', 'gradeComponent.course'])
-            ->when($request->user()->hasRole('instructor'), function ($query) use ($request) {
-                $query->whereHas('student.labGroup', fn ($labGroupQuery) => $labGroupQuery->where('instructor_id', $request->user()->id));
-            })
+        $submissions = $this->scopeByStudentVisibility(
+            AssignmentSubmission::query()->with(['student', 'gradeComponent.course']),
+            $request
+        )
             ->when($request->integer('student_id'), fn ($query, $id) => $query->where('student_id', $id))
             ->when($request->integer('grade_component_id'), fn ($query, $id) => $query->where('grade_component_id', $id))
             ->latest()
@@ -39,10 +43,8 @@ class AssignmentSubmissionController extends Controller
     {
         $data = $request->validated();
         $student = Student::findOrFail($data['student_id']);
-
-        if ($request->user()->hasRole('student') && $student->user_id !== $request->user()->id) {
-            abort(403, 'You can only submit your own assignments.');
-        }
+        $component = GradeComponent::findOrFail($data['grade_component_id']);
+        $this->authorizeStudentVisibility($request, $student, 'You can only submit assignments for students in your assigned lab groups.');
 
         $filePath = null;
 
@@ -50,8 +52,8 @@ class AssignmentSubmissionController extends Controller
             $filePath = $request->file('file')->store('assignment-submissions');
         }
 
-        // The current schema has no deliverable due date, so late days stay zero until that field exists.
-        $daysLate = 0;
+        $submittedAt = isset($data['submitted_at']) ? Carbon::parse($data['submitted_at']) : now();
+        $daysLate = $this->daysLate($submittedAt, $component);
 
         $submission = AssignmentSubmission::updateOrCreate(
             [
@@ -62,7 +64,7 @@ class AssignmentSubmissionController extends Controller
                 'submission_type' => $data['submission_type'],
                 'url' => $data['submission_type'] === 'url' ? ($data['url'] ?? null) : null,
                 'file_path' => $filePath,
-                'submitted_at' => $data['submitted_at'] ?? now(),
+                'submitted_at' => $submittedAt,
                 'days_late' => $daysLate,
                 'late_penalty' => $this->latePenalty->calculate($daysLate),
             ]
@@ -93,15 +95,15 @@ class AssignmentSubmissionController extends Controller
     {
         $submission->loadMissing('student.labGroup');
 
-        if ($request->user()->hasRole('student') && $submission->student->user_id !== $request->user()->id) {
-            abort(403, 'You can only access your own submissions.');
+        $this->authorizeStudentVisibility($request, $submission->student, 'You can only access submissions for your assigned lab groups.');
+    }
+
+    private function daysLate(Carbon $submittedAt, GradeComponent $component): int
+    {
+        if (! $component->due_at || $submittedAt->lessThanOrEqualTo($component->due_at)) {
+            return 0;
         }
 
-        if (
-            $request->user()->hasRole('instructor')
-            && (! $submission->student->labGroup || $submission->student->labGroup->instructor_id !== $request->user()->id)
-        ) {
-            abort(403, 'You can only access submissions for your assigned lab groups.');
-        }
+        return (int) floor($component->due_at->diffInHours($submittedAt) / 24);
     }
 }
