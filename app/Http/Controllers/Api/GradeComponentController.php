@@ -16,8 +16,10 @@ class GradeComponentController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        $courseId = $request->route('course') ?? $request->integer('course_id');
+
         $components = GradeComponent::query()
-            ->when($request->integer('course_id'), fn ($q, $id) => $q->where('course_id', $id))
+            ->when($courseId, fn ($q) => $q->where('course_id', $courseId))
             ->latest()
             ->paginate(20);
 

@@ -61,18 +61,18 @@ return new class extends Migration
         });
 
         // 5. Mock M5's Students
-        Schema::create('students', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('cohort_id')->constrained();
-            $table->string('national_id');
-            $table->boolean('is_at_risk');
-        });
+        // Schema::create('students', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->foreignId('user_id')->constrained();
+        //     $table->foreignId('cohort_id')->constrained();
+        //     $table->string('national_id');
+        //     $table->boolean('is_at_risk');
+        // });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('students');
+        // Schema::dropIfExists('students');
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('engagements');
         Schema::dropIfExists('cohorts');
