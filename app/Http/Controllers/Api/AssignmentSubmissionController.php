@@ -50,7 +50,7 @@ class AssignmentSubmissionController extends Controller
             $filePath = $request->file('file')->store('assignment-submissions');
         }
 
-        //TODO: The current schema has no deliverable due date, so late days stay zero until that field exists.
+        // The current schema has no deliverable due date, so late days stay zero until that field exists.
         $daysLate = 0;
 
         $submission = AssignmentSubmission::updateOrCreate(
