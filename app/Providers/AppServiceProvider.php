@@ -23,5 +23,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(User::class, UserPolicy::class);
         \App\Models\AttendanceRecord::observe(\App\Observers\AttendanceRecordObserver::class);
+        \App\Models\Grade::observe(\App\Observers\GradeObserver::class);
     }
 }

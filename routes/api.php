@@ -34,22 +34,27 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
         ]);
     });
 
-    // M5
-    Route::get('/cohorts/{cohort}/students', [StudentController::class, 'index']);
-    Route::post('/students', [StudentController::class, 'store']);
-    Route::get('/students/at-risk', [StudentController::class, 'atRisk']);
+    // M5 — only staff manage the roster
+    Route::get('/cohorts/{cohort}/students', [StudentController::class, 'index'])->middleware('role:track_admin,branch_manager');
+    Route::post('/students', [StudentController::class, 'store'])->middleware('role:track_admin,branch_manager');
+    Route::get('/students/at-risk', [StudentController::class, 'atRisk'])->middleware('role:track_admin,branch_manager');
+    Route::put('/students/{student}', [StudentController::class, 'update'])->middleware('role:track_admin,branch_manager');
+    Route::patch('/students/{student}/lab-group', [StudentController::class, 'assignLabGroup'])->middleware('role:track_admin,branch_manager');
+
+    // a student may read their own profile and ledger (controller scopes it)
     Route::get('/students/{student}', [StudentController::class, 'show']);
-    Route::put('/students/{student}', [StudentController::class, 'update']);
-    Route::patch('/students/{student}/lab-group', [StudentController::class, 'assignLabGroup']);
     Route::get('/students/{student}/ledger', [AttendanceLedgerController::class, 'show']);
     Route::get('/students/{student}/ledger/entries', [AttendanceLedgerController::class, 'entries']);
-    Route::get('/excuse-requests', [ExcuseRequestController::class, 'index']);
-    Route::post('/excuse-requests', [ExcuseRequestController::class, 'store']);
-    Route::get('/excuse-requests/{excuse}', [ExcuseRequestController::class, 'show']);
-    Route::patch('/excuse-requests/{excuse}/review', [ExcuseRequestController::class, 'review']);
 
-    Route::get('/users', [UserController::class, 'index']);
-    Route::post('/users', [UserController::class, 'store']);
+    // excuses
+    Route::get('/excuse-requests', [ExcuseRequestController::class, 'index']);
+    Route::get('/excuse-requests/{excuse}', [ExcuseRequestController::class, 'show']);
+    Route::post('/excuse-requests', [ExcuseRequestController::class, 'store'])->middleware('role:student');
+    Route::patch('/excuse-requests/{excuse}/review', [ExcuseRequestController::class, 'review'])->middleware('role:track_admin,branch_manager');
+
+    // user provisioning (also checked top down by the UserPolicy)
+    Route::get('/users', [UserController::class, 'index'])->middleware('role:track_admin,branch_manager');
+    Route::post('/users', [UserController::class, 'store'])->middleware('role:track_admin,branch_manager');
 });
 
 Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
@@ -58,14 +63,14 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     Route::post('/attendance/scan', [AttendanceController::class, 'scan']);
 
     // Instructor/TA Management Endpoints
-    Route::get('/sessions/{session}/attendance', [SessionAttendanceController::class,
-        'index']);
-    Route::post('/sessions/{session}/close', [SessionAttendanceController::class,
-        'close']);
+    Route::get('/sessions/{session}/attendance', [SessionAttendanceController::class, 'index'])
+        ->middleware('role:instructor,track_admin,branch_manager');
+    Route::post('/sessions/{session}/close', [SessionAttendanceController::class, 'close'])
+        ->middleware('role:instructor,track_admin,branch_manager');
 
     // QR Code Generation
-    Route::get('/sessions/{session}/qr-code',
-        [\App\Http\Controllers\Api\QrCodeController::class, 'generate']);
+    Route::get('/sessions/{session}/qr-code', [\App\Http\Controllers\Api\QrCodeController::class, 'generate'])
+        ->middleware('role:instructor,track_admin,branch_manager');
 
     // NFC Hardware Flow
     Route::post('/nfc/register',
@@ -147,7 +152,7 @@ Route::middleware(['auth:sanctum', 'check.expiry', RoleMiddleware::using('track_
 });
 
 // ========================================
-// M2 — Tracks, Cohorts & Announcements
+// Tracks, Cohorts & Announcements
 // ========================================
 Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
 

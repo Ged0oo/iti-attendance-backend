@@ -22,11 +22,13 @@ class Session extends Model
         'scheduled_hours',
         'is_delivered',
         'qr_code',
+        'closed_at',
     ];
 
     protected $casts = [
         'date' => 'date',
         'is_delivered' => 'boolean',
+        'closed_at' => 'datetime',
     ];
 
     // a session is not delivered until it actually happens

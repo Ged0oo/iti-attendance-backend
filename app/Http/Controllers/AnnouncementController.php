@@ -15,7 +15,7 @@ class AnnouncementController extends Controller
         $announcements = $cohort->announcements()
             ->with('poster')
             ->orderByDesc('published_at')
-            ->get();
+            ->paginate(20);
 
         return response()->json($announcements);
     }
@@ -31,23 +31,17 @@ class AnnouncementController extends Controller
         $user = $request->user();
 
         if ($user->hasRole('instructor')) {
-            $hasActiveEngagement = Engagement::where('cohort_id', $data['cohort_id'])
-                ->where('instructor_id', $user->id)
-                ->where('date_range_start', '<=', now()->toDateString())
-                ->where('date_range_end', '>=', now()->toDateString())
-                ->exists();
-
-            if (!$hasActiveEngagement) {
-                return response()->json([
-                    'message' => 'You can only post during your active engagement window.',
-                ], 403);
-            }
-
             $engagement = Engagement::where('cohort_id', $data['cohort_id'])
                 ->where('instructor_id', $user->id)
                 ->where('date_range_start', '<=', now()->toDateString())
                 ->where('date_range_end', '>=', now()->toDateString())
                 ->first();
+
+            if (! $engagement) {
+                return response()->json([
+                    'message' => 'You can only post during your active engagement window.',
+                ], 403);
+            }
 
             $data['engagement_id'] = $engagement->id;
         }
