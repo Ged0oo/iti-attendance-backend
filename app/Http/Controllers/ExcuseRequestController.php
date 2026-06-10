@@ -20,9 +20,8 @@ class ExcuseRequestController extends Controller
     {
         $user = Auth::user();
         
-        // This relies on roles which may not be fully implemented yet. 
-        // A placeholder logic based on instructions:
-        if ($user && isset($user->role) && $user->role->value === 'student') {
+        // This relies on roles via Spatie Laravel Permission
+        if ($user && $user->hasRole(UserRole::STUDENT->value)) {
             $student = $user->student;
             $excuses = $student ? $student->excuses : collect();
         } else {
