@@ -14,6 +14,7 @@ class Student extends Model
     protected $fillable = [
         'user_id',
         'cohort_id',
+        'lab_group_id',
         'national_id',
         'is_at_risk',
     ];
@@ -30,6 +31,11 @@ class Student extends Model
     public function cohort(): BelongsTo
     {
         return $this->belongsTo(Cohort::class);
+    }
+
+    public function labGroup(): BelongsTo
+    {
+        return $this->belongsTo(LabGroup::class);
     }
 
     public function grades(): HasMany
