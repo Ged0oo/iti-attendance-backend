@@ -21,7 +21,8 @@ class StoreAssignmentSubmissionRequest extends FormRequest
             'submission_type' => ['required', Rule::in(AssignmentSubmission::SUBMISSION_TYPES)],
 
             'url' => ['required_if:submission_type,url', 'nullable', 'url', 'max:2048'],
-            'file' => ['required_if:submission_type,file', 'nullable', 'file', 'max:10240'],
+            // SEC-4: max 1MB, PDF or image only
+            'file' => ['required_if:submission_type,file', 'nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:1024'],
 
             'submitted_at' => ['nullable', 'date'],
         ];
