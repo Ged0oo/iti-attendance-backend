@@ -147,7 +147,7 @@ Route::middleware(['auth:sanctum', 'check.expiry', RoleMiddleware::using('track_
 });
 
 // ========================================
-// M2 — Tracks, Cohorts & Announcements
+// Tracks, Cohorts & Announcements
 // ========================================
 Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
 
