@@ -48,6 +48,7 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     Route::get('/excuse-requests/{excuse}', [ExcuseRequestController::class, 'show']);
     Route::patch('/excuse-requests/{excuse}/review', [ExcuseRequestController::class, 'review']);
 
+    Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
 });
 
@@ -74,10 +75,6 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     Route::post('/nfc/scan', [\App\Http\Controllers\Api\NfcAttendanceController::class,
         'scan']);
 });
-
-// ========================================
-// M3 — Courses, Engagements & Billing
-// ========================================
 
 // Anyone signed in can browse the schedule (read only)
 Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
