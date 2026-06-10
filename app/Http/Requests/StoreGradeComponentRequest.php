@@ -26,6 +26,7 @@ class StoreGradeComponentRequest extends FormRequest
             'weight' => ['required', 'numeric', 'min:0', 'max:100'],
             'raw_max' => ['required', 'numeric', 'min:0.01'],
             'is_deliverable' => ['boolean'],
+            'due_at' => ['nullable', 'date'],
         ];
     }
 

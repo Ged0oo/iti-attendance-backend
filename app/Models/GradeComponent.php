@@ -19,12 +19,14 @@ class GradeComponent extends Model
         'weight',
         'raw_max',
         'is_deliverable',
+        'due_at',
     ];
 
     protected $casts = [
         'weight' => 'decimal:2',
         'raw_max' => 'decimal:2',
         'is_deliverable' => 'boolean',
+        'due_at' => 'datetime',
     ];
 
     public function course(): BelongsTo
