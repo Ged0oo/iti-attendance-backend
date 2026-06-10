@@ -31,7 +31,6 @@ class StudentGradeCardResource extends JsonResource
             'student' => [
                 'id' => $this->id,
                 'user_id' => $this->user_id,
-                'national_id' => $this->national_id,
                 'is_at_risk' => $this->is_at_risk,
                 'user' => $this->whenLoaded('user', fn () => [
                     'id' => $this->user->id,

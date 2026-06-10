@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreStudentNoteRequest;
+use App\Http\Requests\UpdateStudentNoteRequest;
 use App\Http\Resources\StudentNoteResource;
 use App\Models\Student;
 use App\Models\StudentNote;
@@ -49,6 +50,16 @@ class StudentNoteController extends Controller
     {
         $studentNote->loadMissing('student.labGroup');
         $this->authorizeStudentAccess(request(), $studentNote->student);
+
+        return new StudentNoteResource($studentNote->load(['student', 'writtenBy', 'course']));
+    }
+
+    public function update(UpdateStudentNoteRequest $request, StudentNote $studentNote): StudentNoteResource
+    {
+        $studentNote->loadMissing('student.labGroup');
+        $this->authorizeStudentAccess($request, $studentNote->student);
+
+        $studentNote->update($request->validated());
 
         return new StudentNoteResource($studentNote->load(['student', 'writtenBy', 'course']));
     }

@@ -20,12 +20,14 @@ class Grade extends Model
         'override_value',
         'override_note',
         'overridden_by',
+        'overridden_at',
     ];
 
     protected $casts = [
         'raw_score' => 'decimal:2',
         'normalized_score' => 'decimal:2',
         'override_value' => 'decimal:2',
+        'overridden_at' => 'datetime',
     ];
 
     public function student(): BelongsTo

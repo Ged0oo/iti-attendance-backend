@@ -124,10 +124,10 @@ Route::middleware(['auth:sanctum', 'check.expiry', RoleMiddleware::using('instru
         ->only(['index', 'show']);
     Route::apiResource('student-tags', StudentTagController::class)
         ->parameters(['student-tags' => 'studentTag'])
-        ->only(['index', 'store', 'show']);
+        ->only(['index', 'store', 'show', 'update']);
     Route::apiResource('student-notes', StudentNoteController::class)
         ->parameters(['student-notes' => 'studentNote'])
-        ->only(['index', 'store', 'show']);
+        ->only(['index', 'store', 'show', 'update']);
 });
 
 // Students submit their own assignment work.

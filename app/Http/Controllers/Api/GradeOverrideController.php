@@ -25,6 +25,7 @@ class GradeOverrideController extends Controller
             'override_value' => $data['override_value'],
             'override_note' => $data['override_note'],
             'overridden_by' => $request->user()->id,
+            'overridden_at' => now(),
         ]);
 
         return new GradeResource($grade->load(['student', 'gradeComponent.course', 'labGroup', 'grader', 'overrider']));

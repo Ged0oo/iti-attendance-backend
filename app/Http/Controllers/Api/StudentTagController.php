@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreStudentTagRequest;
+use App\Http\Requests\UpdateStudentTagRequest;
 use App\Http\Resources\StudentTagResource;
 use App\Models\Student;
 use App\Models\StudentTag;
@@ -49,6 +50,16 @@ class StudentTagController extends Controller
     {
         $studentTag->loadMissing('student.labGroup');
         $this->authorizeStudentAccess(request(), $studentTag->student);
+
+        return new StudentTagResource($studentTag->load(['student', 'taggedBy', 'course']));
+    }
+
+    public function update(UpdateStudentTagRequest $request, StudentTag $studentTag): StudentTagResource
+    {
+        $studentTag->loadMissing('student.labGroup');
+        $this->authorizeStudentAccess($request, $studentTag->student);
+
+        $studentTag->update($request->validated());
 
         return new StudentTagResource($studentTag->load(['student', 'taggedBy', 'course']));
     }

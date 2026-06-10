@@ -24,10 +24,10 @@ class GradeResource extends JsonResource
             'override_value' => $this->override_value,
             'override_note' => $this->override_note,
             'overridden_by' => $this->overridden_by,
+            'overridden_at' => $this->overridden_at,
             'student' => $this->whenLoaded('student', fn () => [
                 'id' => $this->student->id,
                 'user_id' => $this->student->user_id,
-                'national_id' => $this->student->national_id,
                 'is_at_risk' => $this->student->is_at_risk,
             ]),
             'grade_component' => new GradeComponentResource($this->whenLoaded('gradeComponent')),

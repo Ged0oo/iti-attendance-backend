@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('override_value', 8, 2)->nullable();
             $table->text('override_note')->nullable();
             $table->foreignId('overridden_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('overridden_at')->nullable();
             $table->timestamps();
 
             $table->unique(['student_id', 'grade_component_id']);
