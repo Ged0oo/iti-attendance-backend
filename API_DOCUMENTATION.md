@@ -67,6 +67,7 @@
 | POST | `api/billing/calculate` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:branch_manager | App\Http\Controllers\Api\BillingController@calculate |
 | GET | `api/billing/{billingRecord}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:branch_manager | App\Http\Controllers\Api\BillingController@show |
 | PATCH | `api/billing/{billingRecord}/finalize` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:branch_manager | App\Http\Controllers\Api\BillingController@finalize |
+| GET | `api/grade-distribution` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeDistributionController |
 | GET | `api/grades` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeController@index |
 | POST | `api/grades` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeController@store |
 | GET | `api/grades/{grade}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeController@show |

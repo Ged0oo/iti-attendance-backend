@@ -22,6 +22,8 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens, HasRoles {
         hasRole as hasRoleViaSpatie;
         hasPermissionTo as hasPermissionToViaSpatie;
+        hasAnyRole as hasAnyRoleViaSpatie;
+        hasAllRoles as hasAllRolesViaSpatie;
     }
 
     /**
@@ -103,6 +105,60 @@ class User extends Authenticatable
         }
 
         return false;
+    }
+
+    /**
+     * Determine if the model has any of the given role(s), with database column fallback.
+     */
+    public function hasAnyRole(...$roles): bool
+    {
+        if ($this->hasAnyRoleViaSpatie(...$roles)) {
+            return true;
+        }
+
+        return $this->hasRole($roles);
+    }
+
+    /**
+     * Determine if the model has all of the given role(s), with database column fallback.
+     */
+    public function hasAllRoles($roles, ?string $guard = null): bool
+    {
+        if ($this->hasAllRolesViaSpatie($roles, $guard)) {
+            return true;
+        }
+
+        $roleColumn = $this->role ?? null;
+        if (!$roleColumn) {
+            return false;
+        }
+
+        if ($roles instanceof \BackedEnum) {
+            $roles = $roles->value;
+        }
+
+        if (is_string($roles) && str_contains($roles, '|')) {
+            $roles = explode('|', $roles);
+        } elseif (is_string($roles)) {
+            $roles = [$roles];
+        } elseif ($roles instanceof \Spatie\Permission\Models\Role) {
+            $roles = [$roles->name];
+        } elseif ($roles instanceof \Illuminate\Support\Collection) {
+            $roles = $roles->map(fn($r) => $r instanceof \Spatie\Permission\Models\Role ? $r->name : (is_string($r) || is_int($r) ? $r : ($r->value ?? null)))->filter()->toArray();
+        } elseif (is_array($roles)) {
+            $roles = array_map(fn($r) => $r instanceof \Spatie\Permission\Models\Role ? $r->name : (is_string($r) || is_int($r) ? $r : ($r->value ?? null)), $roles);
+            $roles = array_filter($roles);
+        } else {
+            return false;
+        }
+
+        foreach ($roles as $r) {
+            if (!$this->hasRole($r, $guard)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
