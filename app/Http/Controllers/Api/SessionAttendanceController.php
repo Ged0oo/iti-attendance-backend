@@ -16,6 +16,13 @@ class SessionAttendanceController extends Controller
      */
     public function index(Session $session): JsonResponse
     {
+        $user = auth()->user();
+        if ($user->hasRole('instructor') && !$user->hasAnyRole(['track_admin', 'branch_manager'])) {
+            if ($session->engagement->instructor_id !== $user->id) {
+                abort(403, 'Unauthorized.');
+            }
+        }
+
         $records = $session->attendanceRecords()->with('student.user')->get();
 
         return response()->json([
@@ -33,6 +40,13 @@ class SessionAttendanceController extends Controller
      */
     public function close(Session $session): JsonResponse
     {
+        $user = auth()->user();
+        if ($user->hasRole('instructor') && !$user->hasAnyRole(['track_admin', 'branch_manager'])) {
+            if ($session->engagement->instructor_id !== $user->id) {
+                abort(403, 'Unauthorized.');
+            }
+        }
+
         if($session->closed_at) {
             return response()->json(['message' => 'Session is already closed.'], 400);
         }

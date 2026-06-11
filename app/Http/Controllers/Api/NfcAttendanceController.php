@@ -75,6 +75,10 @@ class NfcAttendanceController extends Controller
             return response()->json(['message' => 'This session is not active today.'], 403);
         }
 
+        if ($session->closed_at) {
+            return response()->json(['message' => 'Session is closed; check-in is not allowed'], 422);
+        }
+
         // Reuse the exact same business logic from Phase 2
         $result = $this->attendanceService->processScan($session, $nfcTag->student);
 
