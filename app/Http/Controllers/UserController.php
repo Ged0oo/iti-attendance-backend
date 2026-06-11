@@ -22,7 +22,9 @@ class UserController extends Controller
         }
 
         if ($request->has('role')) {
-            $query->role($request->role);
+            $query->where(function ($q) use ($request) {
+                $q->role($request->role)->orWhere('role', $request->role);
+            });
         }
 
         $users = $query->paginate(20)->through(fn ($user) => [
