@@ -44,7 +44,7 @@ class NfcAttendanceController extends Controller
         $nfcTag->update(['status' => 'lost']);
 
         return response()->json([
-            'message' => 'NFC tag has been suspended.'
+            'message' => 'NFC tag has been reported as lost.'
         ], 200);
     }
 
