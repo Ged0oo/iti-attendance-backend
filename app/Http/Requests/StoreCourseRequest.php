@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreCourseRequest extends FormRequest
 {
@@ -19,7 +20,13 @@ class StoreCourseRequest extends FormRequest
     {
         return [
             'cohort_id' => ['required', 'integer', 'exists:cohorts,id'],
-            'name' => ['required', 'string', 'max:255'],
+            // a cohort cannot have two courses with the same name
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('courses')->where(fn ($query) => $query->where('cohort_id', $this->input('cohort_id'))),
+            ],
             'description' => ['nullable', 'string'],
             'max_score' => ['nullable', 'integer', 'min:1'],
         ];
