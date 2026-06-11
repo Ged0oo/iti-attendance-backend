@@ -22,6 +22,8 @@ class GradeDistributionController extends Controller
             'lab_group_id' => ['sometimes', 'integer', 'exists:lab_groups,id'],
         ]);
 
+        $isComponentDistribution = array_key_exists('grade_component_id', $filters);
+
         $grades = $this->scopeByStudentVisibility(
             Grade::query()->with(['student', 'gradeComponent.course', 'labGroup']),
             $request
@@ -39,22 +41,9 @@ class GradeDistributionController extends Controller
             ->when($filters['lab_group_id'] ?? null, fn ($query, int $labGroupId) => $query->where('lab_group_id', $labGroupId))
             ->get();
 
-        $scores = $grades
-            ->filter(fn (Grade $grade) => $grade->student_id && $grade->gradeComponent?->course)
-            ->groupBy(fn (Grade $grade) => "{$grade->student_id}:{$grade->gradeComponent->course->id}")
-            ->map(function ($courseGrades) {
-                /** @var Grade $firstGrade */
-                $firstGrade = $courseGrades->first();
-                $course = $firstGrade->gradeComponent->course;
-
-                return [
-                    'student_id' => $firstGrade->student_id,
-                    'course_id' => $course->id,
-                    'course_name' => $course->name,
-                    'score' => round($courseGrades->sum(fn (Grade $grade) => (float) ($grade->override_value ?? $grade->normalized_score)), 2),
-                ];
-            })
-            ->values();
+        $scores = $isComponentDistribution
+            ? $this->componentPercentageScores($grades)
+            : $this->courseTotalScores($grades);
 
         $buckets = collect([
             ['label' => '90-100', 'min' => 90, 'max' => 100],
@@ -76,7 +65,7 @@ class GradeDistributionController extends Controller
 
         return response()->json([
             'data' => [
-                'score_type' => 'course_total',
+                'score_type' => $isComponentDistribution ? 'component_percentage' : 'course_total',
                 'uses_overrides' => true,
                 'filters' => $filters,
                 'total_students' => $scores->pluck('student_id')->unique()->count(),
@@ -88,5 +77,45 @@ class GradeDistributionController extends Controller
                 'buckets' => $buckets,
             ],
         ]);
+    }
+
+    private function courseTotalScores($grades)
+    {
+        return $grades
+            ->filter(fn (Grade $grade) => $grade->student_id && $grade->gradeComponent?->course)
+            ->groupBy(fn (Grade $grade) => "{$grade->student_id}:{$grade->gradeComponent->course->id}")
+            ->map(function ($courseGrades) {
+                /** @var Grade $firstGrade */
+                $firstGrade = $courseGrades->first();
+                $course = $firstGrade->gradeComponent->course;
+
+                return [
+                    'student_id' => $firstGrade->student_id,
+                    'course_id' => $course->id,
+                    'course_name' => $course->name,
+                    'score' => round($courseGrades->sum(fn (Grade $grade) => (float) ($grade->override_value ?? $grade->normalized_score)), 2),
+                ];
+            })
+            ->values();
+    }
+
+    private function componentPercentageScores($grades)
+    {
+        return $grades
+            ->filter(fn (Grade $grade) => $grade->student_id && $grade->gradeComponent?->course)
+            ->map(function (Grade $grade) {
+                $component = $grade->gradeComponent;
+                $weight = (float) $component->weight;
+                $effectiveScore = (float) ($grade->override_value ?? $grade->normalized_score);
+
+                return [
+                    'student_id' => $grade->student_id,
+                    'course_id' => $component->course->id,
+                    'course_name' => $component->course->name,
+                    'grade_component_id' => $component->id,
+                    'score' => $weight > 0 ? round(($effectiveScore / $weight) * 100, 2) : 0,
+                ];
+            })
+            ->values();
     }
 }
