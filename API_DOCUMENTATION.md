@@ -19,6 +19,7 @@
 | PATCH | `api/excuse-requests/{excuse}/review` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\ExcuseRequestController@review |
 | GET | `api/users` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\UserController@index |
 | POST | `api/users` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\UserController@store |
+| PATCH | `api/users/{user}` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\UserController@update |
 | POST | `api/attendance/scan` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\AttendanceController@scan |
 | GET | `api/sessions/{session}/attendance` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\SessionAttendanceController@index |
 | POST | `api/sessions/{session}/close` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\SessionAttendanceController@close |
@@ -67,6 +68,7 @@
 | POST | `api/billing/calculate` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:branch_manager | App\Http\Controllers\Api\BillingController@calculate |
 | GET | `api/billing/{billingRecord}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:branch_manager | App\Http\Controllers\Api\BillingController@show |
 | PATCH | `api/billing/{billingRecord}/finalize` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:branch_manager | App\Http\Controllers\Api\BillingController@finalize |
+| GET | `api/grade-distribution` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeDistributionController |
 | GET | `api/grades` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeController@index |
 | POST | `api/grades` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeController@store |
 | GET | `api/grades/{grade}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeController@show |
