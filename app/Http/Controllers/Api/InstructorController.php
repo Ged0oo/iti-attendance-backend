@@ -15,7 +15,7 @@ class InstructorController extends Controller
 {
     public function index(): AnonymousResourceCollection
     {
-        return InstructorResource::collection(Instructor::query()->latest()->paginate(20));
+        return InstructorResource::collection(Instructor::query()->with('user')->latest()->paginate(20));
     }
 
     public function store(StoreInstructorRequest $request): JsonResponse
