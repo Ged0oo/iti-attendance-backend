@@ -1454,7 +1454,7 @@
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"session_qr_code\": \"{{qr_payload}}\",\n    \"student_id\": \"{{student_id}}\"\n}",
+                            "raw": "{\n    \"session_qr_code\": \"{{qr_payload}}\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
