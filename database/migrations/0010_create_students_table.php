@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             
-            $table->foreignId('cohort_id')->constrained('cohorts')->cascadeOnDelete();
+            $table->unsignedBigInteger('cohort_id');
             
-            $table->foreignId('lab_group_id')->nullable()->constrained('lab_groups')->nullOnDelete();
+            $table->unsignedBigInteger('lab_group_id')->nullable();
             
             $table->boolean('is_at_risk')->default(false);
             $table->timestamps();
