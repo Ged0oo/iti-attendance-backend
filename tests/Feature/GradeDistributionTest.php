@@ -70,14 +70,44 @@ class GradeDistributionTest extends TestCase
         $this->assertSame(0, collect($data['buckets'])->firstWhere('label', '90-100')['count']);
     }
 
-    private function gradeForNewTrack(?User $instructor = null, float $normalizedScore = 80, ?float $overrideValue = null): Grade
+    public function test_component_filter_uses_component_percentage_instead_of_weighted_course_points(): void
     {
+        $manager = User::factory()->create();
+        Role::findOrCreate('branch_manager');
+        $manager->assignRole('branch_manager');
+
+        $grade = $this->gradeForNewTrack(
+            normalizedScore: 20,
+            rawScore: 100,
+            weight: 20
+        );
+
+        Sanctum::actingAs($manager);
+
+        $response = $this->getJson("/api/grade-distribution?grade_component_id={$grade->grade_component_id}")
+            ->assertOk();
+
+        $data = $response->json('data');
+
+        $this->assertSame('component_percentage', $data['score_type']);
+        $this->assertEquals(100, $data['average_score']);
+        $this->assertSame(1, collect($data['buckets'])->firstWhere('label', '90-100')['count']);
+        $this->assertSame(0, collect($data['buckets'])->firstWhere('label', '<60')['count']);
+    }
+
+    private function gradeForNewTrack(
+        ?User $instructor = null,
+        float $normalizedScore = 80,
+        ?float $overrideValue = null,
+        ?float $rawScore = null,
+        float $weight = 100
+    ): Grade {
         $instructor ??= User::factory()->create();
         $studentUser = User::factory()->create();
         $course = Course::factory()->create();
         $component = GradeComponent::factory()->create([
             'course_id' => $course->id,
-            'weight' => 100,
+            'weight' => $weight,
             'raw_max' => 100,
         ]);
         $labGroup = LabGroup::factory()->create([
@@ -96,7 +126,7 @@ class GradeDistributionTest extends TestCase
             'student_id' => $student->id,
             'grade_component_id' => $component->id,
             'lab_group_id' => $labGroup->id,
-            'raw_score' => $normalizedScore,
+            'raw_score' => $rawScore ?? $normalizedScore,
             'normalized_score' => $normalizedScore,
             'graded_by' => $instructor->id,
             'override_value' => $overrideValue,
