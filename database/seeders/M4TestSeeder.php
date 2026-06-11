@@ -14,30 +14,34 @@ class M4TestSeeder extends Seeder
         $now = Carbon::now();
 
         // 1. Safe Student User
-        $userId = DB::table('users')->where('email', 'nagy@iti.gov.eg')->value('id');
-        if (!$userId) {
-            $userId = DB::table('users')->insertGetId([
-                'name' => 'Mohamed Nagy',
-                'email' => 'nagy@iti.gov.eg',
+        $nagyUser = \App\Models\User::firstOrCreate(
+            ['email' => 'nagy@iti.gov.eg'],
+            [
+                'name'     => 'Mohamed Nagy',
                 'password' => Hash::make('password'),
-                'role' => 'student',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
-        }
+            ]
+        );
+        $nagyUser->syncRoles('student');
+        $userId = $nagyUser->id;
 
         // 2. Safe Instructor User
-        $instructorId = DB::table('users')->where('email', 'mina@iti.gov.eg')->value('id');
-        if (!$instructorId) {
-            $instructorId = DB::table('users')->insertGetId([
-                'name' => 'Mina Nagy',
-                'email' => 'mina@iti.gov.eg',
+        $minaUser = \App\Models\User::firstOrCreate(
+            ['email' => 'mina@iti.gov.eg'],
+            [
+                'name'     => 'Mina Nagy',
                 'password' => Hash::make('password'),
-                'role' => 'instructor',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
-        }
+            ]
+        );
+        $minaUser->syncRoles('instructor');
+        \App\Models\Instructor::firstOrCreate(
+            ['user_id' => $minaUser->id],
+            [
+                'compensation_type' => 'internal',
+                'hourly_rate'       => 50,
+                'fixed_salary'      => 0,
+            ]
+        );
+        $instructorId = $minaUser->id;
 
         // 3. Safe Branch & Track
         $branchId = DB::table('branches')->where('name', 'Smart Village')->value('id') ?? DB::table('branches')->insertGetId(['name' => 'Smart Village', 'location' => 'Cairo']);
