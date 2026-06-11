@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AssignmentSubmissionController;
 use App\Http\Controllers\Api\GradeController;
+use App\Http\Controllers\Api\GradeDistributionController;
 use App\Http\Controllers\Api\GradeOverrideController;
 use App\Http\Controllers\Api\SessionAttendanceController;
 use App\Http\Controllers\Api\StudentGradeCardController;
@@ -115,6 +116,7 @@ Route::middleware(['auth:sanctum', 'check.expiry', \Spatie\Permission\Middleware
 
 // Grading read/write endpoints for instructors and admins.
 Route::middleware(['auth:sanctum', 'check.expiry', RoleMiddleware::using('instructor|track_admin|branch_manager')])->group(function () {
+    Route::get('grade-distribution', GradeDistributionController::class);
     Route::apiResource('grades', GradeController::class)->only(['index', 'store', 'show', 'update']);
     Route::apiResource('assignment-submissions', AssignmentSubmissionController::class)
         ->parameters(['assignment-submissions' => 'assignmentSubmission'])
