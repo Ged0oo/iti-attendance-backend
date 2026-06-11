@@ -44,6 +44,11 @@ class AnnouncementController extends Controller
             }
 
             $data['engagement_id'] = $engagement->id;
+        } elseif ($user->hasRole('track_admin')) {
+            $cohort = Cohort::find($data['cohort_id']);
+            if (!$user->trackAdmins()->where('track_id', $cohort->track_id)->exists()) {
+                return response()->json(['message' => 'Forbidden.'], 403);
+            }
         }
 
         $data['posted_by'] = $user->id;
