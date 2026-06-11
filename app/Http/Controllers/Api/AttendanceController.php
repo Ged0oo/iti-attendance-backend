@@ -48,6 +48,13 @@ class AttendanceController extends Controller
 
         $result = $this->attendanceService->processScan($session, $student);
 
+        if ($result['status'] === 'completed') {
+            return response()->json([
+                'message' => 'You have already checked out for this session.',
+                'data'    => $result
+            ], 409);
+        }
+
         $session->load('engagement.course');
 
         return response()->json([

@@ -25,7 +25,6 @@ class ScanAttendanceRequest extends FormRequest
     {
         return [
             'session_qr_code' => ['required', 'string'],
-            'student_id' => ['required', 'exists:students,id'],
         ];
     }
 }
