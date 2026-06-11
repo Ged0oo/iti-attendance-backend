@@ -29,6 +29,7 @@ class Session extends Model
         'date' => 'date',
         'is_delivered' => 'boolean',
         'closed_at' => 'datetime',
+        'scheduled_hours' => 'decimal:2',
     ];
 
     // a session is not delivered until it actually happens
