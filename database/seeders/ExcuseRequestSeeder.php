@@ -35,15 +35,16 @@ class ExcuseRequestSeeder extends Seeder
                         'email' => 'instructor@example.com',
                     ]);
                     $instructor->assignRole('instructor');
-                    \App\Models\Instructor::firstOrCreate(
-                        ['user_id' => $instructor->id],
-                        [
-                            'compensation_type' => 'internal',
-                            'hourly_rate'       => 50,
-                            'fixed_salary'      => 0,
-                        ]
-                    );
                 }
+                // the instructor we use must always have a profile
+                \App\Models\Instructor::firstOrCreate(
+                    ['user_id' => $instructor->id],
+                    [
+                        'compensation_type' => 'internal',
+                        'hourly_rate'       => 50,
+                        'fixed_salary'      => 0,
+                    ]
+                );
                 $engagement = Engagement::create([
                     'cohort_id' => $cohort->id,
                     'instructor_id' => $instructor->id,

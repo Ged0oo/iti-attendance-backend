@@ -56,3 +56,31 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+---
+
+## Configuration: local dev vs production
+
+This project uses token-based auth (Sanctum). A few driver defaults in `.env.example` are tuned so a fresh clone runs without extra services:
+
+| Setting | Local default | Why |
+|---------|---------------|-----|
+| `SESSION_DRIVER` | `array` | The domain `sessions` table (teaching sessions, bigint id) shares a name with Laravel's session-store table. With `database` sessions Laravel tries to write there and login crashes. `array` / `cookie` / `redis` skip that table entirely. |
+| `CACHE_STORE` | `file` | No Redis server needed for local work. |
+| `QUEUE_CONNECTION` | `sync` | Jobs run inline; no queue worker needed locally. |
+
+### For production
+
+Use real infrastructure in your production `.env`:
+
+```
+SESSION_DRIVER=cookie      # or redis. Never `database` until the table clash below is fixed
+CACHE_STORE=redis
+QUEUE_CONNECTION=redis      # and run: php artisan queue:work
+```
+
+`sync` queues block the response and never retry, and `file` cache does not scale across servers. Redis is fine for all three in production. Only `SESSION_DRIVER=database` is unsafe here, because of the table-name collision.
+
+### Root cause (team follow-up)
+
+The clean long-term fix is to rename the domain `sessions` table (for example `class_sessions`) so Laravel's session store can use a `sessions` table normally. That touches the attendance module, so it needs coordination with its owner.
