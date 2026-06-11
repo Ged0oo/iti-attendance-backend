@@ -13,6 +13,13 @@ class QrCodeController extends Controller
 {
     public function generate(Session $session): JsonResponse
     {
+        $user = auth()->user();
+        if ($user->hasRole('instructor') && !$user->hasAnyRole(['track_admin', 'branch_manager'])) {
+            if ($session->engagement->instructor_id !== $user->id) {
+                abort(403, 'Unauthorized.');
+            }
+        }
+
         $validSeconds = 15;
 
         $payload = [

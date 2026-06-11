@@ -44,6 +44,11 @@ class AnnouncementController extends Controller
             }
 
             $data['engagement_id'] = $engagement->id;
+        } elseif ($user->hasRole('track_admin')) {
+            $cohort = Cohort::find($data['cohort_id']);
+            if (!$user->trackAdmins()->where('track_id', $cohort->track_id)->exists()) {
+                return response()->json(['message' => 'Forbidden.'], 403);
+            }
         }
 
         $data['posted_by'] = $user->id;
@@ -79,7 +84,16 @@ class AnnouncementController extends Controller
 
     public function destroy(Request $request, Announcement $announcement): JsonResponse
     {
-        if ($announcement->posted_by !== $request->user()->id && !$request->user()->hasRole('track_admin')) {
+        $user = $request->user();
+
+        if ($announcement->posted_by === $user->id) {
+            // allow
+        } elseif ($user->hasRole('track_admin')) {
+            $announcement->load('cohort');
+            if (!$user->trackAdmins()->where('track_id', $announcement->cohort->track_id)->exists()) {
+                return response()->json(['message' => 'Forbidden.'], 403);
+            }
+        } else {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 

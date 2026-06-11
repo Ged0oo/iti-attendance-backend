@@ -23,6 +23,10 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Invalid QR code. Please try again.'], 400);
         }
 
+        if (!is_array($payload) || !isset($payload['session_id']) || !isset($payload['expires_at'])) {
+            return response()->json(['message' => 'Invalid QR payload.'], 422);
+        }
+
         if(now()->timestamp > $payload['expires_at']) {
             return response()->json(['message' => 'QR code has expired. Please refresh and try again.'], 400);
         }
@@ -33,6 +37,10 @@ class AttendanceController extends Controller
         // Security check: Parse the string into a Carbon object first
         if (!\Carbon\Carbon::parse($session->date)->isToday()) {
             return response()->json(['message' => 'This session is not active today.'], 403);
+        }
+
+        if ($session->closed_at) {
+            return response()->json(['message' => 'Session is closed; check-in is not allowed'], 422);
         }
 
         // $student = auth()->user()->student;
