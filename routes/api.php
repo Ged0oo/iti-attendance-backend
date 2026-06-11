@@ -66,6 +66,10 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     // Student Scanning Endpoint
     Route::post('/attendance/scan', [AttendanceController::class, 'scan']);
 
+    // Aggregate attendance rate (overall, or filtered by track_id / cohort_id)
+    Route::get('/attendance-rate', [\App\Http\Controllers\Api\AttendanceRateController::class, 'index'])
+        ->middleware('role:instructor,track_admin,branch_manager');
+
     // Instructor/TA Management Endpoints
     Route::get('/sessions/{session}/attendance', [SessionAttendanceController::class, 'index'])
         ->middleware('role:instructor,track_admin,branch_manager');
