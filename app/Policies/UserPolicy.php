@@ -27,4 +27,27 @@ class UserPolicy
 
         return $authUser->hasPermissionTo($requiredPermission);
     }
+    public function update(User $authUser, User $targetUser): bool
+    {
+        $targetRole = $targetUser->roles->first()?->name ?? $targetUser->role;
+
+        // A branch_manager can only be updated by another branch_manager
+        if ($targetRole === 'branch_manager') {
+            return $authUser->hasRole('branch_manager');
+        }
+
+        // For all other roles, require the corresponding "create" permission
+        $requiredPermission = match ($targetRole) {
+            'track_admin' => 'users:create-track-admin',
+            'instructor'  => 'users:create-instructor',
+            'student'     => 'users:create-student',
+            default       => null,
+        };
+
+        if (is_null($requiredPermission)) {
+            return false;
+        }
+
+        return $authUser->hasPermissionTo($requiredPermission);
+    }
 }

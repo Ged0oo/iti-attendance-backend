@@ -58,6 +58,7 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     // user provisioning (also checked top down by the UserPolicy)
     Route::get('/users', [UserController::class, 'index'])->middleware('role:track_admin,branch_manager');
     Route::post('/users', [UserController::class, 'store'])->middleware('role:track_admin,branch_manager');
+    Route::patch('/users/{user}', [UserController::class, 'update'])->middleware('role:track_admin,branch_manager');
 });
 
 Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
