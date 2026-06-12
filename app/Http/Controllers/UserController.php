@@ -4,36 +4,48 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
         $query = User::query();
+        $user  = $request->user();
 
-        if (!$request->user()->hasRole('branch_manager')) {
-            $query->whereDoesntHave('roles', function($q) {
-                $q->where('name', 'branch_manager');
+        if ($user->hasRole('branch_manager')) {
+            $query->where(function ($q) {
+                $q->whereDoesntHave('roles', function ($roleQuery) {
+                    $roleQuery->where('name', 'branch_manager');
+                });
+            });
+
+        } elseif ($user->hasRole('track_admin')) {
+            $query->where(function ($q) {
+                $q->whereDoesntHave('roles', function ($roleQuery) {
+                    $roleQuery->whereIn('name', ['branch_manager', 'track_admin']);
+                });
             });
         }
 
         if ($request->has('role')) {
-            $query->where(function ($q) use ($request) {
-                $q->role($request->role)->orWhere('role', $request->role);
-            });
+            $query->role($request->role);
         }
 
-        $users = $query->paginate(20)->through(fn ($user) => [
+        $users = $query->paginate(20)->through(fn($user) => [
             'id'            => $user->id,
             'name'          => $user->name,
             'email'         => $user->email,
             'role'          => $user->roles->first()?->name ?? $user->role,
             'student_id'    => $user->student ? $user->student->id : null,
             'instructor_id' => $user->instructor ? $user->instructor->id : null,
+            'expires_at'    => $user->expires_at,
         ]);
 
         return response()->json($users);
@@ -45,7 +57,7 @@ class UserController extends Controller
             $user = User::create([
                 'name'       => $request->name,
                 'email'      => $request->email,
-                'password'   => Hash::make($request->password),
+                'password'   => Hash::make(Str::random(32)),
                 'expires_at' => $request->expires_at,
             ]);
 
@@ -54,8 +66,14 @@ class UserController extends Controller
             return $user;
         });
 
+        // Generate a password-reset token using Laravel's built-in broker.
+        $token = Password::broker('activation')->createToken($user);
+
+        // Send the welcome email with the set-password link.
+        $user->notify(new WelcomeNotification($token));
+
         return response()->json([
-            'message' => 'User created successfully.',
+            'message' => 'User created successfully. A welcome email has been sent.',
             'user'    => [
                 'id'            => $user->id,
                 'name'          => $user->name,
@@ -70,6 +88,10 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
+
+        $emailChanged = $request->has('email') && $request->email !== $user->email;
+        $notActivated = is_null($user->email_verified_at);
+
         $user = DB::transaction(function () use ($request, $user) {
             $user->update($request->only(['name', 'email', 'expires_at']));
 
@@ -79,6 +101,13 @@ class UserController extends Controller
 
             return $user;
         });
+
+        if ($emailChanged && $notActivated) {
+            Password::broker('activation')->deleteToken($user);
+
+            $token = Password::broker('activation')->createToken($user);
+            $user->notify(new WelcomeNotification($token));
+        }
 
         return response()->json([
             'message' => 'User updated successfully.',
