@@ -29,11 +29,17 @@ class UserPolicy
     }
     public function update(User $authUser, User $targetUser): bool
     {
-        $targetRole = $targetUser->roles->first()?->name ?? $targetUser->role;
+        // allow users to update their own account
+        if ($authUser->id === $targetUser->id) {
+            return true;
+        }
 
-        // A branch_manager can only be updated by another branch_manager
-        if ($targetRole === 'branch_manager') {
-            return $authUser->hasRole('branch_manager');
+        $targetRole = $targetUser->roles->first()?->name ?? $targetUser->role;
+        $authRole   = $authUser->roles->first()?->name ?? $authUser->role;
+
+        // prevent peer updates
+        if ($authRole === $targetRole) {
+            return false;
         }
 
         // For all other roles, require the corresponding "create" permission
