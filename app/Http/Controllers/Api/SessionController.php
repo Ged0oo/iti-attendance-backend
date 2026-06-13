@@ -74,16 +74,25 @@ class SessionController extends Controller
         $end = Carbon::parse($engagement->date_range_end);
         $created = collect();
 
+        // days that already have a session, so re-generating only fills the gaps
+        $existingDates = Session::where('engagement_id', $engagement->id)
+            ->pluck('date')
+            ->map(fn ($d) => Carbon::parse($d)->toDateString())
+            ->all();
+
         while ($day->lte($end)) {
-            $created->push(Session::create([
-                'engagement_id' => $engagement->id,
-                'date' => $day->toDateString(),
-                'start_time' => $data['start_time'],
-                'end_time' => $data['end_time'],
-                'scheduled_hours' => $data['scheduled_hours'],
-                'is_delivered' => false,
-                'qr_code' => (string) Str::uuid(),
-            ]));
+            $dateStr = $day->toDateString();
+            if (! in_array($dateStr, $existingDates, true)) {
+                $created->push(Session::create([
+                    'engagement_id' => $engagement->id,
+                    'date' => $dateStr,
+                    'start_time' => $data['start_time'],
+                    'end_time' => $data['end_time'],
+                    'scheduled_hours' => $data['scheduled_hours'],
+                    'is_delivered' => false,
+                    'qr_code' => (string) Str::uuid(),
+                ]));
+            }
             $day->addDay();
         }
 
