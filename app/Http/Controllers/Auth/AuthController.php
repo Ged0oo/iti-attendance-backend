@@ -28,8 +28,6 @@ class AuthController extends Controller
             ], 403);
         }
 
-        $user->tokens()->delete();
-
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
