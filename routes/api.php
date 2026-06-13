@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\SessionAttendanceController;
 use App\Http\Controllers\Api\StudentGradeCardController;
 use App\Http\Controllers\Api\StudentNoteController;
 use App\Http\Controllers\Api\StudentTagController;
+use App\Http\Controllers\Api\MeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,9 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
             'expires_at'    => $user->expires_at,
         ]);
     });
+
+    Route::get('/me/profile', [MeController::class, 'profile']);
+    Route::patch('/me', [MeController::class, 'update']);
 
     // M5 — only staff manage the roster
     Route::get('/cohorts/{cohort}/students', [StudentController::class, 'index'])->middleware('role:instructor,track_admin,branch_manager');

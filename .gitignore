@@ -36,3 +36,5 @@ bootstrap/cache/services.php
 postman_collection.json
 export_postman.php
 test_edge_cases.php
+routes.json
+test_manager.php
