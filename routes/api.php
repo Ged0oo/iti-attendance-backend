@@ -167,6 +167,9 @@ Route::middleware(['auth:sanctum', 'check.expiry', RoleMiddleware::using('track_
 // ========================================
 Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
 
+    // Branches
+    Route::get('/branches', [\App\Http\Controllers\BranchController::class, 'index']);
+
     // Tracks
     Route::get('/tracks', [\App\Http\Controllers\TrackController::class, 'index']);
     Route::get('/tracks/{track}', [\App\Http\Controllers\TrackController::class, 'show']);
