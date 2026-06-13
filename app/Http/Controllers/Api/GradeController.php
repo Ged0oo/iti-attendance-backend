@@ -31,7 +31,7 @@ class GradeController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $grades = $this->scopeByStudentVisibility(
-            Grade::query()->with(['student', 'gradeComponent.course', 'labGroup', 'grader', 'overrider']),
+            Grade::query()->with(['student.user', 'gradeComponent.course', 'labGroup', 'grader', 'overrider']),
             $request
         )
             ->when($request->integer('student_id'), fn ($query, $id) => $query->where('student_id', $id))
@@ -73,7 +73,7 @@ class GradeController extends Controller
             ]
         );
 
-        return (new GradeResource($grade->load(['student', 'gradeComponent.course', 'labGroup', 'grader'])))
+        return (new GradeResource($grade->load(['student.user', 'gradeComponent.course', 'labGroup', 'grader'])))
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
     }
@@ -82,7 +82,7 @@ class GradeController extends Controller
     {
         $this->authorizeGradeAccess(request(), $grade);
 
-        return new GradeResource($grade->load(['student', 'gradeComponent.course', 'labGroup', 'grader', 'overrider']));
+        return new GradeResource($grade->load(['student.user', 'gradeComponent.course', 'labGroup', 'grader', 'overrider']));
     }
 
     public function update(UpdateGradeRequest $request, Grade $grade): GradeResource
@@ -109,7 +109,7 @@ class GradeController extends Controller
 
         $grade->save();
 
-        return new GradeResource($grade->load(['student', 'gradeComponent.course', 'labGroup', 'grader', 'overrider']));
+        return new GradeResource($grade->load(['student.user', 'gradeComponent.course', 'labGroup', 'grader', 'overrider']));
     }
 
     public function destroy(Grade $grade): Response
