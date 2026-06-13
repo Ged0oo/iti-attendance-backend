@@ -22,32 +22,55 @@ public function processScan(Session $session, Student $student): array
             ->where('id', $student->cohort_id)
             ->value('track_id');
 
-        $record = AttendanceRecord::where('session_id', $session->id)
-            ->where('student_id', $student->id)
-            ->where('track_id', $trackId)
-            ->first();
+        $session->loadMissing('engagement');
+        $isBusinessSession = $session->engagement?->type === 'business_session';
 
-        if (!$record) {
-            // First Scan: Check-In
-            $record = AttendanceRecord::create([
-                'session_id' => $session->id,
-                'student_id' => $student->id,
-                'track_id'   => $trackId,
-                'arrived_at' => now(),
-                'status'     => 'present',
-            ]);
-
-            return ['status' => 'arrived', 'timestamp' => $record->arrived_at->format('h:i A')];
+        if ($isBusinessSession) {
+            $branchId = \Illuminate\Support\Facades\DB::table('tracks')
+                ->where('id', $trackId)
+                ->value('branch_id');
+            
+            $trackIds = \Illuminate\Support\Facades\DB::table('tracks')
+                ->where('branch_id', $branchId)
+                ->pluck('id')
+                ->toArray();
+        } else {
+            $trackIds = [$trackId];
         }
 
-        if (is_null($record->left_at)) {
+        $records = AttendanceRecord::where('session_id', $session->id)
+            ->where('student_id', $student->id)
+            ->whereIn('track_id', $trackIds)
+            ->get();
+
+        if ($records->isEmpty()) {
+            // First Scan: Check-In
+            $now = now();
+            foreach ($trackIds as $tid) {
+                AttendanceRecord::create([
+                    'session_id' => $session->id,
+                    'student_id' => $student->id,
+                    'track_id'   => $tid,
+                    'arrived_at' => $now,
+                    'status'     => 'present',
+                ]);
+            }
+
+            return ['status' => 'arrived', 'timestamp' => $now->format('h:i A')];
+        }
+
+        $openRecords = $records->filter(fn($r) => is_null($r->left_at));
+        if ($openRecords->isNotEmpty()) {
             // Second Scan: Check-Out
-            $record->update(['left_at' => now()]);
-            return ['status' => 'left', 'timestamp' => $record->left_at->format('h:i A')];
+            $now = now();
+            foreach ($openRecords as $record) {
+                $record->update(['left_at' => $now]);
+            }
+            return ['status' => 'left', 'timestamp' => $now->format('h:i A')];
         }
 
         // Already checked out
-        return ['status' => 'completed', 'timestamp' => $record->left_at->format('h:i A')];
+        return ['status' => 'completed', 'timestamp' => $records->first()?->left_at?->format('h:i A') ?? now()->format('h:i A')];
     }
 
     public function closeSession(Session $session): int
@@ -72,6 +95,9 @@ public function processScan(Session $session, Student $student): array
             $absentRecords = [];
             $now = now();
 
+            $session->loadMissing('engagement');
+            $isBusinessSession = $session->engagement?->type === 'business_session';
+
             foreach ($absentStudentIds as $studentId) {
                 // BYPASS: Because M5's Student model relationships aren't merged yet,
                 // we use a raw DB query to fetch the track_id through the cohort table.
@@ -80,14 +106,29 @@ public function processScan(Session $session, Student $student): array
                     ->where('id', $studentCohortId)
                     ->value('track_id');
 
-                $absentRecords[] = [
-                    'session_id' => $session->id,
-                    'student_id' => $studentId,
-                    'track_id'   => $trackId,
-                    'status'     => 'absent',
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
+                if ($isBusinessSession) {
+                    $branchId = \Illuminate\Support\Facades\DB::table('tracks')
+                        ->where('id', $trackId)
+                        ->value('branch_id');
+                    
+                    $trackIds = \Illuminate\Support\Facades\DB::table('tracks')
+                        ->where('branch_id', $branchId)
+                        ->pluck('id')
+                        ->toArray();
+                } else {
+                    $trackIds = [$trackId];
+                }
+
+                foreach ($trackIds as $tid) {
+                    $absentRecords[] = [
+                        'session_id' => $session->id,
+                        'student_id' => $studentId,
+                        'track_id'   => $tid,
+                        'status'     => 'absent',
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
             }
 
             // Bulk insert for performance
