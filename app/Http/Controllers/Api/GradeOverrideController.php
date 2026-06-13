@@ -16,7 +16,7 @@ class GradeOverrideController extends Controller
     public function __invoke(OverrideGradeRequest $request, Grade $grade): GradeResource
     {
         $data = $request->validated();
-        $grade->loadMissing(['gradeComponent', 'student']);
+        $grade->loadMissing(['gradeComponent', 'student.user']);
         $this->authorizeStudentVisibility($request, $grade->student, 'You can only override grades for your assigned lab groups.');
 
         if ((float) $data['override_value'] > (float) $grade->gradeComponent->weight) {
@@ -32,6 +32,6 @@ class GradeOverrideController extends Controller
             'overridden_at' => now(),
         ]);
 
-        return new GradeResource($grade->load(['student', 'gradeComponent.course', 'labGroup', 'grader', 'overrider']));
+        return new GradeResource($grade->load(['student.user', 'gradeComponent.course', 'labGroup', 'grader', 'overrider']));
     }
 }

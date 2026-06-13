@@ -14,9 +14,15 @@ use Illuminate\Support\Facades\Auth;
 
 class StudentController extends Controller
 {
-    public function index(Cohort $cohort)
+    public function index(Request $request, Cohort $cohort)
     {
-        $students = Student::where('cohort_id', $cohort->id)->get();
+        $students = Student::with('user')
+            ->where('cohort_id', $cohort->id)
+            ->when($request->user()?->hasRole(UserRole::INSTRUCTOR->value), function ($query) use ($request) {
+                $query->whereHas('labGroup', fn ($labGroupQuery) => $labGroupQuery->where('instructor_id', $request->user()->id));
+            })
+            ->get();
+
         return StudentResource::collection($students);
     }
 
