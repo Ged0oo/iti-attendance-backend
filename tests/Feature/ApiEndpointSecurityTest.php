@@ -24,7 +24,10 @@ class ApiEndpointSecurityTest extends TestCase
         
         foreach ($routes as $route) {
             $uri = $route->uri();
-            if (str_starts_with($uri, 'api/') && !in_array('login', $route->middleware()) && !str_contains($uri, 'login') && !str_contains($uri, 'logout')) {
+            // public auth routes (you are not signed in when you hit them) are exempt
+            $publicAuth = ['login', 'logout', 'forgot-password', 'reset-password'];
+            $isPublic = array_filter($publicAuth, fn ($p) => str_contains($uri, $p));
+            if (str_starts_with($uri, 'api/') && !in_array('login', $route->middleware()) && empty($isPublic)) {
                 $apiRoutes[] = $route;
             }
         }
