@@ -11,6 +11,7 @@ use App\Http\Resources\StudentResource;
 use App\Enums\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StudentController extends Controller
 {
@@ -28,7 +29,12 @@ class StudentController extends Controller
 
     public function store(StoreStudentRequest $request)
     {
-        $student = Student::create($request->validated());
+        $student = DB::transaction(function () use ($request) {
+            $student = Student::create($request->validated());
+            $student->user->syncRoles(UserRole::STUDENT->value);
+            $student->user->update(['role' => UserRole::STUDENT->value]);
+            return $student;
+        });
         return new StudentResource($student);
     }
 
