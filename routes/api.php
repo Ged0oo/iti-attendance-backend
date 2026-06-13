@@ -86,7 +86,7 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
         Route::post('/nfc/lost', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'reportLost']);
     });
     
-    Route::middleware(['role:instructor,track_admin,branch_manager'])->group(function () {
+    Route::middleware(['role:student,instructor,track_admin,branch_manager'])->group(function () {
         Route::post('/nfc/scan', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'scan']);
     });
 });

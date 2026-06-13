@@ -3,6 +3,8 @@
 | Method | URI | Middleware | Action |
 |---|---|---|---|
 | POST | `api/login` | api, guest | App\Http\Controllers\Auth\AuthController@store |
+| POST | `api/forgot-password` | api, guest | App\Http\Controllers\Auth\ForgotPasswordController@store |
+| POST | `api/reset-password` | api, guest | App\Http\Controllers\Auth\ResetPasswordController@store |
 | POST | `api/logout` | api, auth:sanctum | App\Http\Controllers\Auth\AuthController@destroy |
 | GET | `api/me` | api, auth:sanctum, check.expiry | Closure |
 | GET | `api/cohorts/{cohort}/students` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@index |
@@ -21,12 +23,13 @@
 | POST | `api/users` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\UserController@store |
 | PATCH | `api/users/{user}` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\UserController@update |
 | POST | `api/attendance/scan` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\AttendanceController@scan |
+| GET | `api/attendance-rate` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\AttendanceRateController@index |
 | GET | `api/sessions/{session}/attendance` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\SessionAttendanceController@index |
 | POST | `api/sessions/{session}/close` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\SessionAttendanceController@close |
 | GET | `api/sessions/{session}/qr-code` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\QrCodeController@generate |
-| POST | `api/nfc/register` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\NfcAttendanceController@register |
-| POST | `api/nfc/lost` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\NfcAttendanceController@reportLost |
-| POST | `api/nfc/scan` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\NfcAttendanceController@scan |
+| POST | `api/nfc/register` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\Api\NfcAttendanceController@register |
+| POST | `api/nfc/lost` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\Api\NfcAttendanceController@reportLost |
+| POST | `api/nfc/scan` | api, auth:sanctum, check.expiry, role:student,instructor,track_admin,branch_manager | App\Http\Controllers\Api\NfcAttendanceController@scan |
 | GET | `api/courses` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\CourseController@index |
 | GET | `api/courses/{course}` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\CourseController@show |
 | GET | `api/grade-components` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\GradeComponentController@index |
