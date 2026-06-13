@@ -81,12 +81,14 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
         ->middleware('role:instructor,track_admin,branch_manager');
 
     // NFC Hardware Flow
-    Route::post('/nfc/register',
-        [\App\Http\Controllers\Api\NfcAttendanceController::class, 'register']);
-    Route::post('/nfc/lost', [\App\Http\Controllers\Api\NfcAttendanceController::class,
-        'reportLost']);
-    Route::post('/nfc/scan', [\App\Http\Controllers\Api\NfcAttendanceController::class,
-        'scan']);
+    Route::middleware(['role:track_admin,branch_manager'])->group(function () {
+        Route::post('/nfc/register', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'register']);
+        Route::post('/nfc/lost', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'reportLost']);
+    });
+    
+    Route::middleware(['role:instructor,track_admin,branch_manager'])->group(function () {
+        Route::post('/nfc/scan', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'scan']);
+    });
 });
 
 // Anyone signed in can browse the schedule (read only)
