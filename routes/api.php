@@ -38,7 +38,7 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     });
 
     // M5 — only staff manage the roster
-    Route::get('/cohorts/{cohort}/students', [StudentController::class, 'index'])->middleware('role:track_admin,branch_manager');
+    Route::get('/cohorts/{cohort}/students', [StudentController::class, 'index'])->middleware('role:instructor,track_admin,branch_manager');
     Route::post('/students', [StudentController::class, 'store'])->middleware('role:track_admin,branch_manager');
     Route::get('/students/at-risk', [StudentController::class, 'atRisk'])->middleware('role:track_admin,branch_manager');
     Route::put('/students/{student}', [StudentController::class, 'update'])->middleware('role:track_admin,branch_manager');
