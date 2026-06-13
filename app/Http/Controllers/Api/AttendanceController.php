@@ -48,9 +48,16 @@ class AttendanceController extends Controller
 
         $result = $this->attendanceService->processScan($session, $student);
 
+        $session->load('engagement.course');
+
         return response()->json([
             'message' => "Successfully checked {$result['status']}",
-            'data'    => $result
+            'data'    => array_merge($result, [
+                'session' => [
+                    'title' => $session->engagement?->course?->name ?? 'Session',
+                    'date'  => $session->date?->toDateString() ?? now()->toDateString(),
+                ]
+            ])
         ], 200);
     }
 }

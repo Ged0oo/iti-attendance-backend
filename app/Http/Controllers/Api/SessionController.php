@@ -41,6 +41,7 @@ class SessionController extends Controller
 
     public function show(Session $session): SessionResource
     {
+        $session->load('engagement.course');
         return new SessionResource($session);
     }
 
