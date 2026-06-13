@@ -38,6 +38,15 @@ class UserController extends Controller
             $query->role($request->role);
         }
 
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
         $users = $query->paginate(20)->through(fn($user) => [
             'id'            => $user->id,
             'name'          => $user->name,
