@@ -17,6 +17,7 @@ class Student extends Model
         'user_id',
         'cohort_id',
         'lab_group_id',
+        'national_id',
         'is_at_risk',
     ];
 
