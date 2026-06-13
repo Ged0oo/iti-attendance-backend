@@ -10,6 +10,7 @@
 | GET | `api/me/profile` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\MeController@profile |
 | PATCH | `api/me` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\MeController@update |
 | GET | `api/cohorts/{cohort}/students` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\StudentController@index |
+| GET | `api/cohorts/{cohort}/students` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@index |
 | POST | `api/students` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@store |
 | GET | `api/students/at-risk` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@atRisk |
 | PUT | `api/students/{student}` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@update |
