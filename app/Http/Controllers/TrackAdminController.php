@@ -6,6 +6,7 @@ use App\Models\Track;
 use App\Models\TrackAdmin;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TrackAdminController extends Controller
 {
@@ -29,13 +30,20 @@ class TrackAdminController extends Controller
             return response()->json(['message' => 'User already assigned to this track.'], 422);
         }
 
-        $admin = TrackAdmin::create([
-            'user_id' => $data['user_id'],
-            'track_id' => $track->id,
-        ]);
+        $admin = DB::transaction(function () use ($data, $track) {
+            $record = TrackAdmin::create([
+                'user_id'  => $data['user_id'],
+                'track_id' => $track->id,
+            ]);
+
+            $user = \App\Models\User::findOrFail($data['user_id']);
+            $user->syncRoles('track_admin');
+            $user->update(['role' => 'track_admin']);
+
+            return $record;
+        });
 
         $admin->load('user');
-
         return response()->json($admin, 201);
     }
 

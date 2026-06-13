@@ -31,3 +31,8 @@ Thumbs.db
 .antigravityignore
 bootstrap/cache/packages.php                                                            
 bootstrap/cache/services.php
+
+# Agent generated files
+postman_collection.json
+export_postman.php
+test_edge_cases.php

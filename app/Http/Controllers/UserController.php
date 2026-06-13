@@ -68,6 +68,7 @@ class UserController extends Controller
                 'email'      => $request->email,
                 'password'   => Hash::make(Str::random(32)),
                 'expires_at' => $request->expires_at,
+                'role'       => $request->role,
             ]);
 
             $user->assignRole($request->role);
@@ -102,11 +103,12 @@ class UserController extends Controller
         $notActivated = is_null($user->email_verified_at);
 
         $user = DB::transaction(function () use ($request, $user) {
-            $user->update($request->only(['name', 'email', 'expires_at']));
-
+            $updateData = $request->only(['name', 'email', 'expires_at']);
             if ($request->has('role')) {
+                $updateData['role'] = $request->role;
                 $user->syncRoles($request->role);
             }
+            $user->update($updateData);
 
             return $user;
         });
