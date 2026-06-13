@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -8,26 +9,21 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            RolesAndPermissionsSeeder::class,
-            BranchManagerSeeder::class,
-        ]);
-
-        // M3
-        $this->call([
-            InstructorSeeder::class,
+            RolesAndPermissionsSeeder::class,   // untouched
+            BranchSeeder::class,
+            TrackSeeder::class,
+            UserSeeder::class,
+            CohortSeeder::class,
             CourseSeeder::class,
-            GradeComponentSeeder::class,
+            StudentSeeder::class,
             LabGroupSeeder::class,
             EngagementSeeder::class,
             SessionSeeder::class,
             BillingRecordSeeder::class,
-        ]);
-
-        // M5
-        $this->call([
-            StudentSeeder::class,
             AttendanceLedgerSeeder::class,
             ExcuseRequestSeeder::class,
+            AnnouncementSeeder::class,
+            DevAccountSeeder::class,  // always runs last
         ]);
     }
 }

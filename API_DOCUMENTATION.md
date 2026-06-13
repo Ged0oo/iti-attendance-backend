@@ -7,7 +7,9 @@
 | POST | `api/reset-password` | api, guest | App\Http\Controllers\Auth\ResetPasswordController@store |
 | POST | `api/logout` | api, auth:sanctum | App\Http\Controllers\Auth\AuthController@destroy |
 | GET | `api/me` | api, auth:sanctum, check.expiry | Closure |
-| GET | `api/cohorts/{cohort}/students` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@index |
+| GET | `api/me/profile` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\MeController@profile |
+| PATCH | `api/me` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\MeController@update |
+| GET | `api/cohorts/{cohort}/students` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\StudentController@index |
 | POST | `api/students` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@store |
 | GET | `api/students/at-risk` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@atRisk |
 | PUT | `api/students/{student}` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@update |
@@ -93,6 +95,7 @@
 | DELETE | `api/assignment-submissions/{assignmentSubmission}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:track_admin|branch_manager | App\Http\Controllers\Api\AssignmentSubmissionController@destroy |
 | DELETE | `api/student-tags/{studentTag}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:track_admin|branch_manager | App\Http\Controllers\Api\StudentTagController@destroy |
 | DELETE | `api/student-notes/{studentNote}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:track_admin|branch_manager | App\Http\Controllers\Api\StudentNoteController@destroy |
+| GET | `api/branches` | api, auth:sanctum, check.expiry | App\Http\Controllers\BranchController@index |
 | GET | `api/tracks` | api, auth:sanctum, check.expiry | App\Http\Controllers\TrackController@index |
 | GET | `api/tracks/{track}` | api, auth:sanctum, check.expiry | App\Http\Controllers\TrackController@show |
 | POST | `api/tracks` | api, auth:sanctum, check.expiry, role:branch_manager | App\Http\Controllers\TrackController@store |
