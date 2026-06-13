@@ -26,11 +26,17 @@ class SessionAttendanceController extends Controller
         $records = $session->attendanceRecords()->with('student.user')->get();
 
         return response()->json([
+            'session_closed' => !is_null($session->closed_at),
             'data' => $records->map(fn($record) => [
-                'student_name' => $record->student->user->name,
+                'id' => $record->id,
                 'status' => $record->status,
-                'arrived_at' => $record->arrived_at?->format('h:i A'),
-                'left_at' => $record->left_at?->format('h:i A'),
+                'arrived_at' => $record->arrived_at?->toIso8601String(),
+                'left_at' => $record->left_at?->toIso8601String(),
+                'student' => [
+                    'user' => [
+                        'name' => $record->student?->user?->name ?? 'Unknown'
+                    ]
+                ]
             ])
         ]);
     }
