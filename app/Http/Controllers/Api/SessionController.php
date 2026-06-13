@@ -53,6 +53,9 @@ class SessionController extends Controller
 
     public function destroy(Session $session): Response
     {
+        // a delivered session is completed, billable work and must not be removed
+        abort_if($session->is_delivered, Response::HTTP_UNPROCESSABLE_ENTITY, 'A delivered session cannot be deleted.');
+
         $session->delete();
 
         return response()->noContent();
