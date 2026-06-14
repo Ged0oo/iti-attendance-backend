@@ -10,17 +10,23 @@ use App\Models\Instructor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class InstructorController extends Controller
 {
     public function index(): AnonymousResourceCollection
     {
-        return InstructorResource::collection(Instructor::query()->latest()->paginate(20));
+        return InstructorResource::collection(Instructor::query()->with('user')->latest()->paginate(20));
     }
 
     public function store(StoreInstructorRequest $request): JsonResponse
     {
-        $instructor = Instructor::create($request->validated());
+        $instructor = DB::transaction(function () use ($request) {
+            $instructor = Instructor::create($request->validated());
+            $instructor->user->syncRoles('instructor');
+            $instructor->user->update(['role' => 'instructor']);
+            return $instructor;
+        });
 
         return (new InstructorResource($instructor))->response()->setStatusCode(Response::HTTP_CREATED);
     }

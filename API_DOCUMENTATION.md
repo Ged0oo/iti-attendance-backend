@@ -3,29 +3,36 @@
 | Method | URI | Middleware | Action |
 |---|---|---|---|
 | POST | `api/login` | api, guest | App\Http\Controllers\Auth\AuthController@store |
+| POST | `api/forgot-password` | api, guest | App\Http\Controllers\Auth\ForgotPasswordController@store |
+| POST | `api/reset-password` | api, guest | App\Http\Controllers\Auth\ResetPasswordController@store |
 | POST | `api/logout` | api, auth:sanctum | App\Http\Controllers\Auth\AuthController@destroy |
 | GET | `api/me` | api, auth:sanctum, check.expiry | Closure |
-| GET | `api/cohorts/{cohort}/students` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@index |
-| POST | `api/students` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@store |
-| GET | `api/students/at-risk` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@atRisk |
+| GET | `api/me/profile` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\MeController@profile |
+| PATCH | `api/me` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\MeController@update |
+| GET | `api/cohorts/{cohort}/students` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\StudentController@index |
+| GET | `api/cohorts/{cohort}/students` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@index |
+| POST | `api/students` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@store |
+| GET | `api/students/at-risk` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@atRisk |
+| PUT | `api/students/{student}` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@update |
+| PATCH | `api/students/{student}/lab-group` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\StudentController@assignLabGroup |
 | GET | `api/students/{student}` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@show |
-| PUT | `api/students/{student}` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@update |
-| PATCH | `api/students/{student}/lab-group` | api, auth:sanctum, check.expiry | App\Http\Controllers\StudentController@assignLabGroup |
 | GET | `api/students/{student}/ledger` | api, auth:sanctum, check.expiry | App\Http\Controllers\AttendanceLedgerController@show |
 | GET | `api/students/{student}/ledger/entries` | api, auth:sanctum, check.expiry | App\Http\Controllers\AttendanceLedgerController@entries |
 | GET | `api/excuse-requests` | api, auth:sanctum, check.expiry | App\Http\Controllers\ExcuseRequestController@index |
-| POST | `api/excuse-requests` | api, auth:sanctum, check.expiry | App\Http\Controllers\ExcuseRequestController@store |
 | GET | `api/excuse-requests/{excuse}` | api, auth:sanctum, check.expiry | App\Http\Controllers\ExcuseRequestController@show |
-| PATCH | `api/excuse-requests/{excuse}/review` | api, auth:sanctum, check.expiry | App\Http\Controllers\ExcuseRequestController@review |
-| GET | `api/users` | api, auth:sanctum, check.expiry | App\Http\Controllers\UserController@index |
-| POST | `api/users` | api, auth:sanctum, check.expiry | App\Http\Controllers\UserController@store |
+| POST | `api/excuse-requests` | api, auth:sanctum, check.expiry, role:student | App\Http\Controllers\ExcuseRequestController@store |
+| PATCH | `api/excuse-requests/{excuse}/review` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\ExcuseRequestController@review |
+| GET | `api/users` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\UserController@index |
+| POST | `api/users` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\UserController@store |
+| PATCH | `api/users/{user}` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\UserController@update |
 | POST | `api/attendance/scan` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\AttendanceController@scan |
-| GET | `api/sessions/{session}/attendance` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\SessionAttendanceController@index |
-| POST | `api/sessions/{session}/close` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\SessionAttendanceController@close |
-| GET | `api/sessions/{session}/qr-code` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\QrCodeController@generate |
-| POST | `api/nfc/register` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\NfcAttendanceController@register |
-| POST | `api/nfc/lost` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\NfcAttendanceController@reportLost |
-| POST | `api/nfc/scan` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\NfcAttendanceController@scan |
+| GET | `api/attendance-rate` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\AttendanceRateController@index |
+| GET | `api/sessions/{session}/attendance` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\SessionAttendanceController@index |
+| POST | `api/sessions/{session}/close` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\SessionAttendanceController@close |
+| GET | `api/sessions/{session}/qr-code` | api, auth:sanctum, check.expiry, role:instructor,track_admin,branch_manager | App\Http\Controllers\Api\QrCodeController@generate |
+| POST | `api/nfc/register` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\Api\NfcAttendanceController@register |
+| POST | `api/nfc/lost` | api, auth:sanctum, check.expiry, role:track_admin,branch_manager | App\Http\Controllers\Api\NfcAttendanceController@reportLost |
+| POST | `api/nfc/scan` | api, auth:sanctum, check.expiry, role:student,instructor,track_admin,branch_manager | App\Http\Controllers\Api\NfcAttendanceController@scan |
 | GET | `api/courses` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\CourseController@index |
 | GET | `api/courses/{course}` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\CourseController@show |
 | GET | `api/grade-components` | api, auth:sanctum, check.expiry | App\Http\Controllers\Api\GradeComponentController@index |
@@ -67,6 +74,7 @@
 | POST | `api/billing/calculate` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:branch_manager | App\Http\Controllers\Api\BillingController@calculate |
 | GET | `api/billing/{billingRecord}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:branch_manager | App\Http\Controllers\Api\BillingController@show |
 | PATCH | `api/billing/{billingRecord}/finalize` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:branch_manager | App\Http\Controllers\Api\BillingController@finalize |
+| GET | `api/grade-distribution` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeDistributionController |
 | GET | `api/grades` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeController@index |
 | POST | `api/grades` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeController@store |
 | GET | `api/grades/{grade}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:instructor|track_admin|branch_manager | App\Http\Controllers\Api\GradeController@show |
@@ -88,6 +96,7 @@
 | DELETE | `api/assignment-submissions/{assignmentSubmission}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:track_admin|branch_manager | App\Http\Controllers\Api\AssignmentSubmissionController@destroy |
 | DELETE | `api/student-tags/{studentTag}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:track_admin|branch_manager | App\Http\Controllers\Api\StudentTagController@destroy |
 | DELETE | `api/student-notes/{studentNote}` | api, auth:sanctum, check.expiry, Spatie\Permission\Middleware\RoleMiddleware:track_admin|branch_manager | App\Http\Controllers\Api\StudentNoteController@destroy |
+| GET | `api/branches` | api, auth:sanctum, check.expiry | App\Http\Controllers\BranchController@index |
 | GET | `api/tracks` | api, auth:sanctum, check.expiry | App\Http\Controllers\TrackController@index |
 | GET | `api/tracks/{track}` | api, auth:sanctum, check.expiry | App\Http\Controllers\TrackController@show |
 | POST | `api/tracks` | api, auth:sanctum, check.expiry, role:branch_manager | App\Http\Controllers\TrackController@store |

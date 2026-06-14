@@ -16,14 +16,27 @@ class SessionAttendanceController extends Controller
      */
     public function index(Session $session): JsonResponse
     {
+        $user = auth()->user();
+        if ($user->hasRole('instructor') && !$user->hasAnyRole(['track_admin', 'branch_manager'])) {
+            if ($session->engagement->instructor_id !== $user->id) {
+                abort(403, 'Unauthorized.');
+            }
+        }
+
         $records = $session->attendanceRecords()->with('student.user')->get();
 
         return response()->json([
+            'session_closed' => !is_null($session->closed_at),
             'data' => $records->map(fn($record) => [
-                'student_name' => $record->student->user->name,
+                'id' => $record->id,
                 'status' => $record->status,
-                'arrived_at' => $record->arrived_at?->format('h:i A'),
-                'left_at' => $record->left_at?->format('h:i A'),
+                'arrived_at' => $record->arrived_at?->toIso8601String(),
+                'left_at' => $record->left_at?->toIso8601String(),
+                'student' => [
+                    'user' => [
+                        'name' => $record->student?->user?->name ?? 'Unknown'
+                    ]
+                ]
             ])
         ]);
     }
@@ -33,6 +46,13 @@ class SessionAttendanceController extends Controller
      */
     public function close(Session $session): JsonResponse
     {
+        $user = auth()->user();
+        if ($user->hasRole('instructor') && !$user->hasAnyRole(['track_admin', 'branch_manager'])) {
+            if ($session->engagement->instructor_id !== $user->id) {
+                abort(403, 'Unauthorized.');
+            }
+        }
+
         if($session->closed_at) {
             return response()->json(['message' => 'Session is already closed.'], 400);
         }

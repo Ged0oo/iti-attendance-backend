@@ -3,11 +3,13 @@
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AssignmentSubmissionController;
 use App\Http\Controllers\Api\GradeController;
+use App\Http\Controllers\Api\GradeDistributionController;
 use App\Http\Controllers\Api\GradeOverrideController;
 use App\Http\Controllers\Api\SessionAttendanceController;
 use App\Http\Controllers\Api\StudentGradeCardController;
 use App\Http\Controllers\Api\StudentNoteController;
 use App\Http\Controllers\Api\StudentTagController;
+use App\Http\Controllers\Api\MeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,16 +28,21 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
         $user = $request->user();
 
         return response()->json([
-            'id'         => $user->id,
-            'name'       => $user->name,
-            'email'      => $user->email,
-            'role'       => $user->getRoleNames()->first(),
-            'expires_at' => $user->expires_at,
+            'id'            => $user->id,
+            'name'          => $user->name,
+            'email'         => $user->email,
+            'role'          => $user->roles->first()?->name ?? $user->role,
+            'student_id'    => $user->student ? $user->student->id : null,
+            'instructor_id' => $user->instructor ? $user->instructor->id : null,
+            'expires_at'    => $user->expires_at,
         ]);
     });
 
+    Route::get('/me/profile', [MeController::class, 'profile']);
+    Route::patch('/me', [MeController::class, 'update']);
+
     // M5 — only staff manage the roster
-    Route::get('/cohorts/{cohort}/students', [StudentController::class, 'index'])->middleware('role:track_admin,branch_manager');
+    Route::get('/cohorts/{cohort}/students', [StudentController::class, 'index'])->middleware('role:instructor,track_admin,branch_manager');
     Route::post('/students', [StudentController::class, 'store'])->middleware('role:track_admin,branch_manager');
     Route::get('/students/at-risk', [StudentController::class, 'atRisk'])->middleware('role:track_admin,branch_manager');
     Route::put('/students/{student}', [StudentController::class, 'update'])->middleware('role:track_admin,branch_manager');
@@ -55,12 +62,17 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
     // user provisioning (also checked top down by the UserPolicy)
     Route::get('/users', [UserController::class, 'index'])->middleware('role:track_admin,branch_manager');
     Route::post('/users', [UserController::class, 'store'])->middleware('role:track_admin,branch_manager');
+    Route::patch('/users/{user}', [UserController::class, 'update'])->middleware('role:track_admin,branch_manager');
 });
 
 Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
 
     // Student Scanning Endpoint
     Route::post('/attendance/scan', [AttendanceController::class, 'scan']);
+
+    // Aggregate attendance rate (overall, or filtered by track_id / cohort_id)
+    Route::get('/attendance-rate', [\App\Http\Controllers\Api\AttendanceRateController::class, 'index'])
+        ->middleware('role:instructor,track_admin,branch_manager');
 
     // Instructor/TA Management Endpoints
     Route::get('/sessions/{session}/attendance', [SessionAttendanceController::class, 'index'])
@@ -73,12 +85,14 @@ Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
         ->middleware('role:instructor,track_admin,branch_manager');
 
     // NFC Hardware Flow
-    Route::post('/nfc/register',
-        [\App\Http\Controllers\Api\NfcAttendanceController::class, 'register']);
-    Route::post('/nfc/lost', [\App\Http\Controllers\Api\NfcAttendanceController::class,
-        'reportLost']);
-    Route::post('/nfc/scan', [\App\Http\Controllers\Api\NfcAttendanceController::class,
-        'scan']);
+    Route::middleware(['role:track_admin,branch_manager'])->group(function () {
+        Route::post('/nfc/register', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'register']);
+        Route::post('/nfc/lost', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'reportLost']);
+    });
+    
+    Route::middleware(['role:student,instructor,track_admin,branch_manager'])->group(function () {
+        Route::post('/nfc/scan', [\App\Http\Controllers\Api\NfcAttendanceController::class, 'scan']);
+    });
 });
 
 // Anyone signed in can browse the schedule (read only)
@@ -120,6 +134,7 @@ Route::middleware(['auth:sanctum', 'check.expiry', \Spatie\Permission\Middleware
 
 // Grading read/write endpoints for instructors and admins.
 Route::middleware(['auth:sanctum', 'check.expiry', RoleMiddleware::using('instructor|track_admin|branch_manager')])->group(function () {
+    Route::get('grade-distribution', GradeDistributionController::class);
     Route::apiResource('grades', GradeController::class)->only(['index', 'store', 'show', 'update']);
     Route::apiResource('assignment-submissions', AssignmentSubmissionController::class)
         ->parameters(['assignment-submissions' => 'assignmentSubmission'])
@@ -155,6 +170,9 @@ Route::middleware(['auth:sanctum', 'check.expiry', RoleMiddleware::using('track_
 // Tracks, Cohorts & Announcements
 // ========================================
 Route::middleware(['auth:sanctum', 'check.expiry'])->group(function () {
+
+    // Branches
+    Route::get('/branches', [\App\Http\Controllers\BranchController::class, 'index']);
 
     // Tracks
     Route::get('/tracks', [\App\Http\Controllers\TrackController::class, 'index']);

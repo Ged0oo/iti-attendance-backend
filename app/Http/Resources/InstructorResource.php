@@ -15,6 +15,7 @@ class InstructorResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
+            'user_name' => $this->whenLoaded('user', fn () => $this->user?->name),
             'compensation_type' => $this->compensation_type,
             'hourly_rate' => $this->hourly_rate,
             'fixed_salary' => $this->fixed_salary,

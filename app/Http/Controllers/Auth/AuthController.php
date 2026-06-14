@@ -28,19 +28,19 @@ class AuthController extends Controller
             ], 403);
         }
 
-        $user->tokens()->delete();
-
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'token'      => $token,
             'token_type' => 'Bearer',
             'user'       => [
-                'id'         => $user->id,
-                'name'       => $user->name,
-                'email'      => $user->email,
-                'role'       => $user->getRoleNames()->first(),
-                'expires_at' => $user->expires_at,
+                'id'            => $user->id,
+                'name'          => $user->name,
+                'email'         => $user->email,
+                'role'          => $user->roles->first()?->name ?? $user->role,
+                'student_id'    => $user->student ? $user->student->id : null,
+                'instructor_id' => $user->instructor ? $user->instructor->id : null,
+                'expires_at'    => $user->expires_at,
             ],
         ]);
     }

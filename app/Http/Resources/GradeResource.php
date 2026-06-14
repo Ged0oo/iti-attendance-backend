@@ -29,6 +29,11 @@ class GradeResource extends JsonResource
                 'id' => $this->student->id,
                 'user_id' => $this->student->user_id,
                 'is_at_risk' => $this->student->is_at_risk,
+                'user' => $this->student->relationLoaded('user') && $this->student->user ? [
+                    'id' => $this->student->user->id,
+                    'name' => $this->student->user->name,
+                    'email' => $this->student->user->email,
+                ] : null,
             ]),
             'grade_component' => new GradeComponentResource($this->whenLoaded('gradeComponent')),
             'lab_group' => $this->whenLoaded('labGroup', fn () => [

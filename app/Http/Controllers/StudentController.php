@@ -11,18 +11,30 @@ use App\Http\Resources\StudentResource;
 use App\Enums\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StudentController extends Controller
 {
-    public function index(Cohort $cohort)
+    public function index(Request $request, Cohort $cohort)
     {
-        $students = Student::where('cohort_id', $cohort->id)->get();
+        $students = Student::with('user')
+            ->where('cohort_id', $cohort->id)
+            ->when($request->user()?->hasRole(UserRole::INSTRUCTOR->value), function ($query) use ($request) {
+                $query->whereHas('labGroup', fn ($labGroupQuery) => $labGroupQuery->where('instructor_id', $request->user()->id));
+            })
+            ->get();
+
         return StudentResource::collection($students);
     }
 
     public function store(StoreStudentRequest $request)
     {
-        $student = Student::create($request->validated());
+        $student = DB::transaction(function () use ($request) {
+            $student = Student::create($request->validated());
+            $student->user->syncRoles(UserRole::STUDENT->value);
+            $student->user->update(['role' => UserRole::STUDENT->value]);
+            return $student;
+        });
         return new StudentResource($student);
     }
 

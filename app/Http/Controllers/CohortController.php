@@ -85,6 +85,13 @@ class CohortController extends Controller
 
     public function transition(Request $request, Cohort $cohort): JsonResponse
     {
+        $user = $request->user();
+        if ($user->hasRole('track_admin')) {
+            if (!$user->trackAdmins()->where('track_id', $cohort->track_id)->exists()) {
+                return response()->json(['message' => 'Forbidden.'], 403);
+            }
+        }
+
         $data = $request->validate([
             'status' => 'required|in:open,configuring,delivering,participating,rolled_up',
         ]);

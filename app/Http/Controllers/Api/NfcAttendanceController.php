@@ -44,7 +44,7 @@ class NfcAttendanceController extends Controller
         $nfcTag->update(['status' => 'lost']);
 
         return response()->json([
-            'message' => 'NFC tag has been suspended.'
+            'message' => 'NFC tag has been reported as lost.'
         ], 200);
     }
 
@@ -73,6 +73,10 @@ class NfcAttendanceController extends Controller
 
         if (!\Carbon\Carbon::parse($session->date)->isToday()) {
             return response()->json(['message' => 'This session is not active today.'], 403);
+        }
+
+        if ($session->closed_at) {
+            return response()->json(['message' => 'Session is closed; check-in is not allowed'], 422);
         }
 
         // Reuse the exact same business logic from Phase 2

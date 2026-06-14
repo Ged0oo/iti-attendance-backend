@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 // Heads up: the sessions table right now is the temporary one from the
 // attendance work, so its columns differ a little from what we want
@@ -29,6 +30,7 @@ class Session extends Model
         'date' => 'date',
         'is_delivered' => 'boolean',
         'closed_at' => 'datetime',
+        'scheduled_hours' => 'decimal:2',
     ];
 
     // a session is not delivered until it actually happens
@@ -39,5 +41,10 @@ class Session extends Model
     public function engagement(): BelongsTo
     {
         return $this->belongsTo(Engagement::class);
+    }
+
+    public function attendanceRecords(): HasMany
+    {
+        return $this->hasMany(AttendanceRecord::class);
     }
 }

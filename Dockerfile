@@ -3,14 +3,17 @@ WORKDIR /var/www
 
 # Added libzip-dev to apt-get, and zip to docker-php-ext-install
 RUN apt-get update && apt-get install -y \
-    git curl unzip zip libpng-dev libonig-dev libxml2-dev libzip-dev \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip \
+    git curl unzip zip libpng-dev libonig-dev libxml2-dev libzip-dev libpq-dev \
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip \
     && pecl install redis && docker-php-ext-enable redis
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Copy the Laravel source code into the image
 COPY . .
+
+# Remove host-cached bootstrap files to avoid loading dev-only providers
+RUN rm -f bootstrap/cache/*.php
 
 # Added --no-scripts so Laravel doesn't crash trying to connect to a database that isn't there yet
 RUN composer install --optimize-autoloader --no-dev --no-scripts

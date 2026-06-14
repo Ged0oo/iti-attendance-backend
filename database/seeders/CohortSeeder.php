@@ -9,48 +9,61 @@ class CohortSeeder extends Seeder
 {
     public function run(): void
     {
-        $webTrackId = DB::table('tracks')->where('name', 'Web Development')->value('id');
-        $mobileTrackId = DB::table('tracks')->where('name', 'Mobile Development')->value('id');
-
         $bmId = DB::table('users')->where('role', 'branch_manager')->value('id');
+        $tracks = DB::table('tracks')->pluck('id', 'name');
 
-        $cohorts = [
-            [
-                'track_id' => $webTrackId,
-                'name' => 'Intake 46',
-                'status' => 'delivering',
-                'start_date' => '2026-05-01',
-                'end_date' => '2026-08-30',
-                'created_by' => $bmId,
-            ],
-            [
-                'track_id' => $mobileTrackId,
-                'name' => 'Intake 46',
-                'status' => 'configuring',
-                'start_date' => '2026-06-01',
-                'end_date' => '2026-09-30',
-                'created_by' => $bmId,
-            ],
-        ];
+        if ($tracks->isEmpty()) {
+            $this->command->error('CohortSeeder: No tracks found. Run TrackSeeder first.');
+            return;
+        }
 
-        foreach ($cohorts as $cohort) {
-            if (!$cohort['track_id']) {
-                continue;
-            }
+        // Intake 46 → 2025-10-01 to 2026-06-30
+        // Each earlier intake: subtract 1 year per step back from intake 46
+        // Intake 46 = index 0 (step 0), Intake 45 = index 1 (step 1) ... Intake 15 = index 31 (step 31)
 
-            $exists = DB::table('cohorts')
-                ->where('track_id', $cohort['track_id'])
-                ->where('name', $cohort['name'])
-                ->exists();
+        $baseStart = '2025-10-01';
+        $baseEnd   = '2026-06-30';
 
-            if (!$exists) {
-                DB::table('cohorts')->insert(array_merge($cohort, [
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]));
+        $created = 0;
+
+        foreach ($tracks as $trackName => $trackId) {
+            for ($intakeNumber = 15; $intakeNumber <= 46; $intakeNumber++) {
+                $stepsBack = 46 - $intakeNumber;
+
+                $startDate = date('Y-m-d', strtotime("{$baseStart} -{$stepsBack} years"));
+                $endDate   = date('Y-m-d', strtotime("{$baseEnd} -{$stepsBack} years"));
+
+                // Status logic
+                if ($intakeNumber <= 45) {
+                    $status = 'rolled_up';
+                } else {
+                    $status = 'delivering'; // Intake 46
+                }
+
+                $name = "Intake {$intakeNumber}";
+
+                $exists = DB::table('cohorts')
+                    ->where('track_id', $trackId)
+                    ->where('name', $name)
+                    ->exists();
+
+                if (!$exists) {
+                    DB::table('cohorts')->insert([
+                        'track_id'   => $trackId,
+                        'name'       => $name,
+                        'status'     => $status,
+                        'start_date' => $startDate,
+                        'end_date'   => $endDate,
+                        'created_by' => $bmId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $created++;
+                }
             }
         }
 
-        $this->command->info('Cohorts seeded.');
+        $total = DB::table('cohorts')->count();
+        $this->command->info("✔ CohortSeeder — {$total} cohorts present ({$created} new). 32 intakes × 8 tracks.");
     }
 }

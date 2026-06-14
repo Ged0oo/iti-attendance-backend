@@ -1,0 +1,10 @@
+.git
+.github
+vendor
+node_modules
+bootstrap/cache/*.php
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/cache/*
+storage/logs/*
+.env

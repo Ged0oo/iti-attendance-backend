@@ -27,4 +27,33 @@ class UserPolicy
 
         return $authUser->hasPermissionTo($requiredPermission);
     }
+    public function update(User $authUser, User $targetUser): bool
+    {
+        // allow users to update their own account
+        if ($authUser->id === $targetUser->id) {
+            return true;
+        }
+
+        $targetRole = $targetUser->roles->first()?->name ?? $targetUser->role;
+        $authRole   = $authUser->roles->first()?->name ?? $authUser->role;
+
+        // prevent peer updates
+        if ($authRole === $targetRole) {
+            return false;
+        }
+
+        // For all other roles, require the corresponding "create" permission
+        $requiredPermission = match ($targetRole) {
+            'track_admin' => 'users:create-track-admin',
+            'instructor'  => 'users:create-instructor',
+            'student'     => 'users:create-student',
+            default       => null,
+        };
+
+        if (is_null($requiredPermission)) {
+            return false;
+        }
+
+        return $authUser->hasPermissionTo($requiredPermission);
+    }
 }
